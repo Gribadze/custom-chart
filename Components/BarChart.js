@@ -64,8 +64,8 @@ export class BarChart extends Component<BarChartProps, BarChartState> {
 
   static getDerivedStateFromProps(props: BarChartProps) {
     const positiveHeight = Object.entries(props.data).reduce((acc, [ key, value ], index) => {
-      const curretnValue = props.getValue(key, value, index);
-      return (acc > curretnValue ? acc : curretnValue)
+      const currentValue = props.getValue(key, value, index);
+      return (acc > currentValue ? acc : currentValue)
     }, 0);
     const negativeHeight = Math.abs(Object.entries(props.data).reduce((acc, [ key, value ], index) => {
       const currentValue = props.getValue(key, value, index);
@@ -74,7 +74,12 @@ export class BarChart extends Component<BarChartProps, BarChartState> {
     return {
       positiveHeight,
       negativeHeight,
-      chartHeight: positiveHeight + negativeHeight,
+      chartHeight: (
+        typeof props.maxValue !== 'undefined'
+        && typeof props.minValue !== 'undefined'
+      )
+        ? (props.maxValue - props.minValue)
+        : (positiveHeight + negativeHeight),
       chartWidth: Object.keys(props.data).length * (props.thickness + props.spaceAround) + props.spaceAround,
     }
   }

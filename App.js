@@ -41,6 +41,8 @@ export default class App extends Component<Props> {
         <BarChart
           data={data}
           labelRotation={60}
+          maxValue={40}
+          minValue={-40}
         />
       </View>
     );
