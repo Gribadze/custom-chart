@@ -5,7 +5,9 @@
   "scripts": {
     "start": "node node_modules/react-native/local-cli/cli.js start",
     "devtools": "./node_modules/.bin/react-devtools",
-    "test": "jest"
+    "test": "jest",
+    "flow": "flow",
+    "lint": "eslint ./"
   },
   "dependencies": {
     "react": "16.8.3",
@@ -17,7 +19,15 @@
     "@babel/core": "^7.4.3",
     "@babel/preset-flow": "^7.0.0",
     "@babel/runtime": "^7.4.3",
+    "babel-eslint": "^10.0.1",
     "babel-jest": "^24.7.1",
+    "eslint": "^5.16.0",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-plugin-flowtype": "^3.6.1",
+    "eslint-plugin-import": "^2.16.0",
+    "eslint-plugin-jest": "^22.4.1",
+    "eslint-plugin-jsx-a11y": "^6.2.1",
+    "eslint-plugin-react": "^7.12.4",
     "flow-bin": "^0.96.0",
     "jest": "^24.7.1",
     "metro-react-native-babel-preset": "^0.53.1",

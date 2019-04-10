@@ -8,19 +8,36 @@ import Bar from './Bar';
 const LABEL_PADDING = 10;
 const FONT_SIZE = 14;
 
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  contentContainer: {
+    flexGrow: 1,
+  },
+  canvas: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  svg: {
+    backgroundColor: 'silver',
+  },
+});
+
 type BarChartProps = {
   data: Object,
   getValue?: (key: string, value: number, index?: number) => number,
   getLabel?: (key: string, value?: number, index?: number) => string,
-  maxValue?: ?number,
-  minValue?: ?number,
+  // maxValue?: ?number,
+  // minValue?: ?number,
   thickness?: number,
   spaceAround?: number,
   scrollable?: boolean,
   coloring?: string,
-  horizontal?: boolean,
+  // horizontal?: boolean,
   labelColor?: string,
-  clickable?: boolean,
+  // clickable?: boolean,
   showLabel?: boolean,
   labelRotation?: number,
 };
@@ -36,7 +53,7 @@ type BarChartState = {
   rightOverflow: number,
 }
 
-export class BarChart extends Component<BarChartProps, BarChartState> {
+export default class BarChart extends Component<BarChartProps, BarChartState> {
   static defaultProps = {
     getValue: (key, value) => value,
     getLabel: key => key,
@@ -44,18 +61,20 @@ export class BarChart extends Component<BarChartProps, BarChartState> {
     spaceAround: 5,
     scrollable: true,
     coloring: '#3498DB',
-    horizontal: false,
+    // horizontal: false,
     labelColor: '#000000',
-    clickable: false,
+    // clickable: false,
     showLabel: true,
     labelRotation: 90,
+    // maxValue: null,
+    // minValue: null,
   };
 
   state = {
     positiveHeight: 0,
-    negativeHeight: 0,
+    // negativeHeight: 0,
     labelHeight: 0,
-    containerHeight: 0,
+    // containerHeight: 0,
     chartHeight: 0,
     chartWidth: 0,
     leftOverflow: 0,
@@ -63,36 +82,38 @@ export class BarChart extends Component<BarChartProps, BarChartState> {
   };
 
   static getDerivedStateFromProps(props: BarChartProps) {
-    const positiveHeight = Object.entries(props.data).reduce((acc, [ key, value ], index) => {
+    const positiveHeight = Object.entries(props.data).reduce((acc, [key, value], index) => {
       const currentValue = props.getValue(key, value, index);
-      return (acc > currentValue ? acc : currentValue)
+      return (acc > currentValue ? acc : currentValue);
     }, 0);
-    const negativeHeight = Math.abs(Object.entries(props.data).reduce((acc, [ key, value ], index) => {
-      const currentValue = props.getValue(key, value, index);
-      return (acc < currentValue ? acc : currentValue);
-    }, 0));
+    const negativeHeight = Math.abs(
+      Object.entries(props.data).reduce((acc, [key, value], index) => {
+        const currentValue = props.getValue(key, value, index);
+        return (acc < currentValue ? acc : currentValue);
+      }, 0),
+    );
     return {
       positiveHeight,
-      negativeHeight,
-      chartHeight: (
-        typeof props.maxValue !== 'undefined'
-        && typeof props.minValue !== 'undefined'
-      )
+      // negativeHeight,
+      chartHeight: (props.maxValue !== null && props.minValue !== null)
         ? (props.maxValue - props.minValue)
         : (positiveHeight + negativeHeight),
-      chartWidth: Object.keys(props.data).length * (props.thickness + props.spaceAround) + props.spaceAround,
-    }
+      chartWidth:
+        Object.keys(props.data).length * (props.thickness + props.spaceAround) + props.spaceAround,
+    };
   }
 
-  handleCanvasLayout = ({ nativeEvent }) => {
-    const { layout: { height } } = nativeEvent;
-    this.setState({ containerHeight: height });
-  };
+  // handleCanvasLayout = ({ nativeEvent }) => {
+  //   const { layout: { height } } = nativeEvent;
+  //   this.setState({ containerHeight: height });
+  // };
 
   handleLabelLayout = ({ nativeEvent }) => {
     const { layout: { height, width, x } } = nativeEvent;
-    const { chartWidth, labelHeight, leftOverflow, rightOverflow } = this.state;
-    let newState = {};
+    const {
+      chartWidth, labelHeight, leftOverflow, rightOverflow,
+    } = this.state;
+    const newState = {};
     if (labelHeight < height) {
       newState.labelHeight = height;
     }
@@ -109,16 +130,20 @@ export class BarChart extends Component<BarChartProps, BarChartState> {
 
   render() {
     const {
-      data, thickness, spaceAround, coloring, labelColor, labelRotation, showLabel, scrollable, getValue, getLabel,
+      data, thickness, spaceAround, coloring, labelColor, labelRotation, showLabel,
+      scrollable, getValue, getLabel,
     } = this.props;
-    const { positiveHeight, chartWidth, chartHeight, labelHeight, leftOverflow, rightOverflow } = this.state;
+    const {
+      positiveHeight, chartWidth, chartHeight, labelHeight, leftOverflow, rightOverflow,
+      // containerHeight,
+    } = this.state;
     return (
       <ScrollView
         style={styles.container}
         contentContainerStyle={styles.contentContainer}
         horizontal
         scrollEnabled={scrollable}
-        onLayout={this.handleCanvasLayout}
+        // onLayout={this.handleCanvasLayout}
       >
         <View style={styles.canvas}>
           <Svg
@@ -128,7 +153,7 @@ export class BarChart extends Component<BarChartProps, BarChartState> {
             viewBox={`${leftOverflow} 0 ${chartWidth + rightOverflow} ${chartHeight + labelHeight + LABEL_PADDING * 2}`}
             preserveAspectRatio="xMinYMax meet"
           >
-            {Object.entries(data).map(([ key, value ], index) => (
+            {Object.entries(data).map(([key, value], index) => (
               <React.Fragment
                 key={key}
               >
@@ -138,7 +163,7 @@ export class BarChart extends Component<BarChartProps, BarChartState> {
                   color={coloring}
                   offset={{
                     x: index * (thickness + spaceAround) + spaceAround,
-                    y: positiveHeight - (value > 0 ? value : 0)
+                    y: positiveHeight - (value > 0 ? value : 0),
                   }}
                 />
                 {showLabel
@@ -169,21 +194,3 @@ export class BarChart extends Component<BarChartProps, BarChartState> {
     );
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  contentContainer: {
-    flexGrow: 1,
-  },
-  canvas: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-  },
-  svg: {
-    backgroundColor: 'silver',
-  }
-});
-
