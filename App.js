@@ -23,7 +23,10 @@ export default class App extends Component<Props> {
   render() {
     return (
       <View style={styles.container}>
-        <BarChart data={[40, 10, 30, 50, 5, 10, 20, 7, 80, 15]} />
+        <BarChart
+          data={[40, -10, 30, 50, 5, 10, -20, 7, 80, -15]}
+          getLabel={item => `Label for ${item}`}
+        />
       </View>
     );
   }
@@ -31,11 +34,10 @@ export default class App extends Component<Props> {
 
 const styles = StyleSheet.create({
   container: {
-    // flex: 1,
-    height: 200,
+    flex: 1,
+    // height: 200,
     // width: 200,
     alignItems: 'center',
-    backgroundColor: '#cccccc',
   },
   welcome: {
     fontSize: 20,

@@ -4,11 +4,13 @@ import React, { Component } from 'react';
 import { ScrollView, StyleSheet, View, Text, Dimensions } from 'react-native';
 import { BarChart as RNSVGBarChart, XAxis, YAxis } from 'react-native-svg-charts';
 import * as scale from 'd3-scale';
-import { Svg, Text as SvgText } from 'react-native-svg';
+import { G, Svg, Text as SvgText } from 'react-native-svg';
 import Bar from './Bar';
 
 type BarChartProps = {
   data: Object,
+  getValue?: () => number,
+  getLabel?: () => string,
   thickness?: number,
   spaceAround?: number,
   scrollable?: boolean,
@@ -21,12 +23,16 @@ type BarChartProps = {
 };
 
 type BarChartState = {
-  canvasHeight: number,
+  positiveHeight: number,
+  negativeHeight: number,
+  labelHeight: number,
   canvasWidth: number,
 }
 
 export class BarChart extends Component<BarChartProps, BarChartState> {
   static defaultProps = {
+    getValue: item => item,
+    getLabel: (item, index) => index,
     thickness: 40,
     spaceAround: 5,
     scrollable: true,
@@ -39,26 +45,43 @@ export class BarChart extends Component<BarChartProps, BarChartState> {
   };
 
   state = {
-    canvasHeight: 0,
+    positiveHeight: 0,
+    negativeHeight: 0,
+    labelHeight: 0,
     canvasWidth: 0,
   };
 
   static getDerivedStateFromProps(props: BarChartProps) {
     return {
-      canvasHeight: props.data.reduce((acc, item) => (acc > item ? acc : item), 0),
+      positiveHeight: props.data.reduce((acc, item, index) => {
+        const value = props.getValue(item, index);
+        return (acc > value ? acc : value)
+      }, 0),
+      negativeHeight: Math.abs(props.data.reduce((acc, item, index) => {
+        const value = props.getValue(item, index);
+        return (acc < value ? acc : value);
+      }, 0)),
       canvasWidth: props.data.length * (props.thickness + props.spaceAround) + props.spaceAround,
     }
   }
 
-  handleCanvasPress = (...args) => {
-    console.log('Pressed', args);
+  handleLayout = ({ nativeEvent }) => {
+    const { layout: { height } } = nativeEvent;
+    const { labelHeight } = this.state;
+    console.log('Layout', labelHeight, height);
+    if (labelHeight < height) {
+      this.setState({ labelHeight: height });
+    }
   };
 
   render() {
     const {
-      data, thickness, horizontal, spaceAround, coloring, labelColor, labelRotation, showLabel, scrollable,
+      data, thickness, horizontal, spaceAround, coloring, labelColor, labelRotation, showLabel, scrollable, getValue, getLabel,
     } = this.props;
-    const { canvasHeight, canvasWidth } = this.state;
+    const { positiveHeight, negativeHeight, canvasWidth, labelHeight } = this.state;
+    const canvasHeight = positiveHeight + negativeHeight;
+    const LABEL_PADDING = 10;
+    const FONT_SIZE = 14;
     return (
       <ScrollView
         style={styles.container}
@@ -69,28 +92,42 @@ export class BarChart extends Component<BarChartProps, BarChartState> {
         <View style={styles.canvas}>
           <Svg
             width={canvasWidth}
-            height={canvasHeight}
-            viewBox={`0 0 ${canvasWidth} ${canvasHeight}`}
-            preserveAspectRatio="xMinYMin slice"
+            height="100%"
+            viewBox={`0 0 ${canvasWidth} ${canvasHeight + labelHeight + LABEL_PADDING * 2}`}
+            preserveAspectRatio="xMinYMax meet"
           >
             {data.map((item, index) => (
-              <Bar
+              <React.Fragment
                 key={index}
-                height={item}
-                width={thickness}
-                offset={{ x: index * (thickness + spaceAround) + spaceAround, y: canvasHeight - item }}
-              />
+              >
+                <Bar
+                  height={getValue(item, index)}
+                  width={thickness}
+                  color={coloring}
+                  offset={{ x: index * (thickness + spaceAround) + spaceAround, y: positiveHeight - (item > 0 ? item : 0) }}
+                />
+                {showLabel
+                  ? (
+                    <G
+                      origin={`${index * (thickness + spaceAround) + spaceAround + thickness / 2}, ${canvasHeight + LABEL_PADDING + labelHeight / 2}`}
+                      rotation={labelRotation}
+                      onLayout={this.handleLayout}
+                    >
+                      <SvgText
+                        fill={labelColor}
+                        fontSize={FONT_SIZE}
+                        textAnchor="middle"
+                        x={index * (thickness + spaceAround) + spaceAround + thickness / 2}
+                        y={canvasHeight + LABEL_PADDING + (FONT_SIZE + labelHeight) / 2}
+                      >
+                        {getLabel(item, index)}
+                      </SvgText>
+                    </G>
+                  )
+                  : null
+                }
+              </React.Fragment>
             ))}
-            <SvgText
-              fill="black"
-              fontSize={10}
-              fontWeight="bold"
-              textAnchor="middle"
-              x={50}
-              y={50}
-            >
-              Hello
-            </SvgText>
           </Svg>
         </View>
       </ScrollView>

@@ -6,6 +6,7 @@ import { Rect } from 'react-native-svg';
 type BarProps = {
   height: number,
   width: number,
+  color: string,
   offset: {
     x: number,
     y: number,
@@ -15,15 +16,15 @@ type BarProps = {
 export default class Bar extends React.PureComponent<BarProps> {
   render() {
     const {
-      height, width, offset,
+      height, width, color, offset,
     } = this.props;
     return (
           <Rect
             x={offset.x}
             y={offset.y}
             width={width}
-            height={height}
-            fill="yellow"
+            height={Math.abs(height)}
+            fill={color}
           />
     )
   }
