@@ -8,17 +8,17 @@
     "test": "jest"
   },
   "dependencies": {
-    "d3-shape": "latest",
     "react": "16.8.3",
     "react-native": "0.59.3",
-    "react-native-svg": "^9.3.7",
-    "react-native-svg-charts": "^5.2.0",
-    "d3-scale": "latest"
+    "react-native-svg": "^9.3.7"
   },
   "devDependencies": {
+    "@babel/cli": "^7.4.3",
     "@babel/core": "^7.4.3",
+    "@babel/preset-flow": "^7.0.0",
     "@babel/runtime": "^7.4.3",
     "babel-jest": "^24.7.1",
+    "flow-bin": "^0.96.0",
     "jest": "^24.7.1",
     "metro-react-native-babel-preset": "^0.53.1",
     "react-devtools": "^3.6.1",

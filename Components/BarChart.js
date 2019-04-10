@@ -1,16 +1,19 @@
 // @format
 // @flow
 import React, { Component } from 'react';
-import { ScrollView, StyleSheet, View, Text, Dimensions } from 'react-native';
-import { BarChart as RNSVGBarChart, XAxis, YAxis } from 'react-native-svg-charts';
-import * as scale from 'd3-scale';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { G, Svg, Text as SvgText } from 'react-native-svg';
 import Bar from './Bar';
+
+const LABEL_PADDING = 10;
+const FONT_SIZE = 14;
 
 type BarChartProps = {
   data: Object,
   getValue?: () => number,
   getLabel?: () => string,
+  maxValue?: ?number,
+  minValue?: ?number,
   thickness?: number,
   spaceAround?: number,
   scrollable?: boolean,
@@ -26,7 +29,11 @@ type BarChartState = {
   positiveHeight: number,
   negativeHeight: number,
   labelHeight: number,
-  canvasWidth: number,
+  containerHeight: number,
+  chartHeight: number,
+  chartWidth: number,
+  leftOverflow: number,
+  rightOverflow: number,
 }
 
 export class BarChart extends Component<BarChartProps, BarChartState> {
@@ -48,52 +55,74 @@ export class BarChart extends Component<BarChartProps, BarChartState> {
     positiveHeight: 0,
     negativeHeight: 0,
     labelHeight: 0,
-    canvasWidth: 0,
+    containerHeight: 0,
+    chartHeight: 0,
+    chartWidth: 0,
+    leftOverflow: 0,
+    rightOverflow: 0,
   };
 
   static getDerivedStateFromProps(props: BarChartProps) {
+    const positiveHeight = props.data.reduce((acc, item, index) => {
+      const value = props.getValue(item, index);
+      return (acc > value ? acc : value)
+    }, 0);
+    const negativeHeight = Math.abs(props.data.reduce((acc, item, index) => {
+      const value = props.getValue(item, index);
+      return (acc < value ? acc : value);
+    }, 0));
     return {
-      positiveHeight: props.data.reduce((acc, item, index) => {
-        const value = props.getValue(item, index);
-        return (acc > value ? acc : value)
-      }, 0),
-      negativeHeight: Math.abs(props.data.reduce((acc, item, index) => {
-        const value = props.getValue(item, index);
-        return (acc < value ? acc : value);
-      }, 0)),
-      canvasWidth: props.data.length * (props.thickness + props.spaceAround) + props.spaceAround,
+      positiveHeight,
+      negativeHeight,
+      chartHeight: positiveHeight + negativeHeight,
+      chartWidth: props.data.length * (props.thickness + props.spaceAround) + props.spaceAround,
     }
   }
 
-  handleLayout = ({ nativeEvent }) => {
-    const { layout: { height } } = nativeEvent;
-    const { labelHeight } = this.state;
-    console.log('Layout', labelHeight, height);
+  handleCanvasLayout = ({ nativeEvent }) => {
+    const { layout: { height, width } } = nativeEvent;
+    console.log('CanvasLayout', width);
+    this.setState({ containerHeight: height });
+  };
+
+  handleLabelLayout = ({ nativeEvent }) => {
+    const { layout: { height, width, x } } = nativeEvent;
+    const { chartWidth, labelHeight, leftOverflow, rightOverflow } = this.state;
+    let newState = {};
     if (labelHeight < height) {
-      this.setState({ labelHeight: height });
+      newState.labelHeight = height;
+    }
+    if (leftOverflow > x) {
+      newState.leftOverflow = x;
+    }
+    if (rightOverflow < (x + width) - chartWidth + leftOverflow) {
+      newState.rightOverflow = (x + width) - chartWidth + leftOverflow;
+    }
+    console.log('LabelLayout', newState);
+    if (Object.keys(newState).length) {
+      this.setState(newState);
     }
   };
 
   render() {
     const {
-      data, thickness, horizontal, spaceAround, coloring, labelColor, labelRotation, showLabel, scrollable, getValue, getLabel,
+      data, thickness, spaceAround, coloring, labelColor, labelRotation, showLabel, scrollable, getValue, getLabel,
     } = this.props;
-    const { positiveHeight, negativeHeight, canvasWidth, labelHeight } = this.state;
-    const canvasHeight = positiveHeight + negativeHeight;
-    const LABEL_PADDING = 10;
-    const FONT_SIZE = 14;
+    const { positiveHeight, chartWidth, chartHeight, labelHeight, leftOverflow, rightOverflow } = this.state;
     return (
       <ScrollView
         style={styles.container}
         contentContainerStyle={styles.contentContainer}
         horizontal
         scrollEnabled={scrollable}
+        onLayout={this.handleCanvasLayout}
       >
         <View style={styles.canvas}>
           <Svg
-            width={canvasWidth}
+            style={styles.svg}
+            width={Math.abs(leftOverflow) + chartWidth + rightOverflow}
             height="100%"
-            viewBox={`0 0 ${canvasWidth} ${canvasHeight + labelHeight + LABEL_PADDING * 2}`}
+            viewBox={`${leftOverflow} 0 ${chartWidth + rightOverflow} ${chartHeight + labelHeight + LABEL_PADDING * 2}`}
             preserveAspectRatio="xMinYMax meet"
           >
             {data.map((item, index) => (
@@ -104,21 +133,24 @@ export class BarChart extends Component<BarChartProps, BarChartState> {
                   height={getValue(item, index)}
                   width={thickness}
                   color={coloring}
-                  offset={{ x: index * (thickness + spaceAround) + spaceAround, y: positiveHeight - (item > 0 ? item : 0) }}
+                  offset={{
+                    x: index * (thickness + spaceAround) + spaceAround,
+                    y: positiveHeight - (item > 0 ? item : 0)
+                  }}
                 />
                 {showLabel
                   ? (
                     <G
-                      origin={`${index * (thickness + spaceAround) + spaceAround + thickness / 2}, ${canvasHeight + LABEL_PADDING + labelHeight / 2}`}
+                      origin={`${index * (thickness + spaceAround) + spaceAround + thickness / 2}, ${chartHeight + LABEL_PADDING + labelHeight / 2}`}
                       rotation={labelRotation}
-                      onLayout={this.handleLayout}
+                      onLayout={this.handleLabelLayout}
                     >
                       <SvgText
                         fill={labelColor}
                         fontSize={FONT_SIZE}
                         textAnchor="middle"
                         x={index * (thickness + spaceAround) + spaceAround + thickness / 2}
-                        y={canvasHeight + LABEL_PADDING + (FONT_SIZE + labelHeight) / 2}
+                        y={chartHeight + LABEL_PADDING + (FONT_SIZE + labelHeight) / 2}
                       >
                         {getLabel(item, index)}
                       </SvgText>
@@ -138,8 +170,6 @@ export class BarChart extends Component<BarChartProps, BarChartState> {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginHorizontal: 0,
-    paddingHorizontal: 0,
   },
   contentContainer: {
     flexGrow: 1,
@@ -147,8 +177,10 @@ const styles = StyleSheet.create({
   canvas: {
     flex: 1,
     justifyContent: 'flex-end',
-    // height: 200,
-    // width: 300,
+    alignItems: 'center',
+  },
+  svg: {
+    backgroundColor: 'silver',
   }
 });
 

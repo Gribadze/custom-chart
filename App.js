@@ -25,6 +25,9 @@ export default class App extends Component<Props> {
       <View style={styles.container}>
         <BarChart
           data={[40, -10, 30, 50, 5, 10, -20, 7, 80, -15]}
+          labelRotation={45}
+          spaceAround={10}
+          thickness={30}
           getLabel={item => `Label for ${item}`}
         />
       </View>
