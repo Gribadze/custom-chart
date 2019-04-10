@@ -10,8 +10,8 @@ const FONT_SIZE = 14;
 
 type BarChartProps = {
   data: Object,
-  getValue?: () => number,
-  getLabel?: () => string,
+  getValue?: (key: string, value: number, index?: number) => number,
+  getLabel?: (key: string, value?: number, index?: number) => string,
   maxValue?: ?number,
   minValue?: ?number,
   thickness?: number,
@@ -38,8 +38,8 @@ type BarChartState = {
 
 export class BarChart extends Component<BarChartProps, BarChartState> {
   static defaultProps = {
-    getValue: item => item,
-    getLabel: (item, index) => index,
+    getValue: (key, value) => value,
+    getLabel: key => key,
     thickness: 40,
     spaceAround: 5,
     scrollable: true,
@@ -63,25 +63,24 @@ export class BarChart extends Component<BarChartProps, BarChartState> {
   };
 
   static getDerivedStateFromProps(props: BarChartProps) {
-    const positiveHeight = props.data.reduce((acc, item, index) => {
-      const value = props.getValue(item, index);
-      return (acc > value ? acc : value)
+    const positiveHeight = Object.entries(props.data).reduce((acc, [ key, value ], index) => {
+      const curretnValue = props.getValue(key, value, index);
+      return (acc > curretnValue ? acc : curretnValue)
     }, 0);
-    const negativeHeight = Math.abs(props.data.reduce((acc, item, index) => {
-      const value = props.getValue(item, index);
-      return (acc < value ? acc : value);
+    const negativeHeight = Math.abs(Object.entries(props.data).reduce((acc, [ key, value ], index) => {
+      const currentValue = props.getValue(key, value, index);
+      return (acc < currentValue ? acc : currentValue);
     }, 0));
     return {
       positiveHeight,
       negativeHeight,
       chartHeight: positiveHeight + negativeHeight,
-      chartWidth: props.data.length * (props.thickness + props.spaceAround) + props.spaceAround,
+      chartWidth: Object.keys(props.data).length * (props.thickness + props.spaceAround) + props.spaceAround,
     }
   }
 
   handleCanvasLayout = ({ nativeEvent }) => {
-    const { layout: { height, width } } = nativeEvent;
-    console.log('CanvasLayout', width);
+    const { layout: { height } } = nativeEvent;
     this.setState({ containerHeight: height });
   };
 
@@ -98,7 +97,6 @@ export class BarChart extends Component<BarChartProps, BarChartState> {
     if (rightOverflow < (x + width) - chartWidth + leftOverflow) {
       newState.rightOverflow = (x + width) - chartWidth + leftOverflow;
     }
-    console.log('LabelLayout', newState);
     if (Object.keys(newState).length) {
       this.setState(newState);
     }
@@ -125,17 +123,17 @@ export class BarChart extends Component<BarChartProps, BarChartState> {
             viewBox={`${leftOverflow} 0 ${chartWidth + rightOverflow} ${chartHeight + labelHeight + LABEL_PADDING * 2}`}
             preserveAspectRatio="xMinYMax meet"
           >
-            {data.map((item, index) => (
+            {Object.entries(data).map(([ key, value ], index) => (
               <React.Fragment
-                key={index}
+                key={key}
               >
                 <Bar
-                  height={getValue(item, index)}
+                  height={getValue(key, value, index)}
                   width={thickness}
                   color={coloring}
                   offset={{
                     x: index * (thickness + spaceAround) + spaceAround,
-                    y: positiveHeight - (item > 0 ? item : 0)
+                    y: positiveHeight - (value > 0 ? value : 0)
                   }}
                 />
                 {showLabel
@@ -152,7 +150,7 @@ export class BarChart extends Component<BarChartProps, BarChartState> {
                         x={index * (thickness + spaceAround) + spaceAround + thickness / 2}
                         y={chartHeight + LABEL_PADDING + (FONT_SIZE + labelHeight) / 2}
                       >
-                        {getLabel(item, index)}
+                        {getLabel(key, value, index)}
                       </SvgText>
                     </G>
                   )

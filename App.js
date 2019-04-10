@@ -18,17 +18,29 @@ const instructions = Platform.select({
     'Shake or press menu button for dev menu',
 });
 
+const data = {
+  January: -20,
+  February: -10,
+  March: -5,
+  April: 5,
+  May: 15,
+  June: 25,
+  July: 25,
+  August: 20,
+  September: 15,
+  October: 10,
+  November: 5,
+  December: -10,
+};
+
 type Props = {};
 export default class App extends Component<Props> {
   render() {
     return (
       <View style={styles.container}>
         <BarChart
-          data={[40, -10, 30, 50, 5, 10, -20, 7, 80, -15]}
-          labelRotation={45}
-          spaceAround={10}
-          thickness={30}
-          getLabel={item => `Label for ${item}`}
+          data={data}
+          labelRotation={60}
         />
       </View>
     );
