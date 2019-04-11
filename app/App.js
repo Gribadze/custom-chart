@@ -47,12 +47,7 @@ const styles = StyleSheet.create({
 export default function App() {
   return (
     <View style={styles.container}>
-      <BarChart
-        data={data}
-        labelRotation={60}
-        maxValue={40}
-        minValue={-40}
-      />
+      <BarChart data={data} labelRotation={60} />
     </View>
   );
 }

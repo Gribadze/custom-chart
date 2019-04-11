@@ -7,8 +7,10 @@ module.exports = {
   },
   extends: [
     'airbnb',
+    'prettier',
     'plugin:react/recommended',
-    'plugin:flowtype/recommended'
+    'plugin:flowtype/recommended',
+    // 'plugin:flowtype-errors/recommended',
   ],
   globals: {
     Atomics: 'readonly',
@@ -22,11 +24,15 @@ module.exports = {
     sourceType: 'module',
   },
   plugins: [
+    'prettier',
     'react',
+    'jsx-a11y',
+    'import',
     'flowtype',
     'jest',
   ],
   rules: {
     'react/jsx-filename-extension': 0,
+    'prettier/prettier': ['error'],
   },
 };
