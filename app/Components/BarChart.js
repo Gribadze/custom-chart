@@ -8,7 +8,6 @@ import Bar from './Bar';
 import Label from './Label';
 
 const LABEL_PADDING = 10;
-const FONT_SIZE = 14;
 
 type DefaultProps = {
   getValue: (key: string, value: number, index?: number) => number,
@@ -20,13 +19,16 @@ type DefaultProps = {
   labelColor: string,
   showLabel: boolean,
   labelRotation: number,
+  labelFontSize: number,
 };
 
 type Props = DefaultProps & {
   data: { [string]: number },
   getValue?: (key: string, value: number, index?: number) => number,
   getLabel?: (key: string, value?: number, index?: number) => string,
+  // eslint-disable-next-line react/no-unused-prop-types
   maxValue?: number,
+  // eslint-disable-next-line react/no-unused-prop-types
   minValue?: number,
   thickness?: number,
   spaceAround?: number,
@@ -37,6 +39,7 @@ type Props = DefaultProps & {
   // clickable?: boolean,
   showLabel?: boolean,
   labelRotation?: number,
+  labelFontSize?: number,
 };
 
 type State = {
@@ -61,6 +64,7 @@ export default class BarChart extends React.Component<Props, State> {
     // clickable: false,
     showLabel: true,
     labelRotation: 90,
+    labelFontSize: 14,
     maxValue: null,
     minValue: null,
   };
@@ -68,13 +72,13 @@ export default class BarChart extends React.Component<Props, State> {
   state = {
     positiveHeight: 0,
     negativeHeight: 0,
-    labelHeight: FONT_SIZE,
     yScale: 1,
+    labelHeight: 0,
     leftOverflow: 0,
     rightOverflow: 0,
   };
 
-  static getDerivedStateFromProps(props: Props) {
+  static getDerivedStateFromProps(props: Props, state: State) {
     const positiveHeight = Object.entries(props.data).reduce((acc, [key, value], index) => {
       const currentValue = props.getValue(key, +value, index);
       return acc > currentValue ? acc : currentValue;
@@ -86,6 +90,7 @@ export default class BarChart extends React.Component<Props, State> {
     return {
       positiveHeight,
       negativeHeight,
+      labelHeight: Math.max(props.labelFontSize, state.labelHeight),
     };
   }
 
@@ -93,10 +98,8 @@ export default class BarChart extends React.Component<Props, State> {
     const {
       layout: { height },
     } = nativeEvent;
-    const { maxValue, minValue } = this.props;
     const { positiveHeight, negativeHeight } = this.state;
-    const chartHeight = (maxValue || positiveHeight) - (minValue || negativeHeight);
-    this.setState({ yScale: height / chartHeight });
+    this.setState({ yScale: height / (positiveHeight - negativeHeight) });
   };
 
   handleLabelLayout = ({ nativeEvent }: LayoutEvent) => {
@@ -125,6 +128,7 @@ export default class BarChart extends React.Component<Props, State> {
       coloring,
       labelColor,
       labelRotation,
+      labelFontSize,
       showLabel,
       scrollable,
       getValue,
@@ -140,6 +144,7 @@ export default class BarChart extends React.Component<Props, State> {
     } = this.state;
     const chartHeight = yScale * (positiveHeight - negativeHeight);
     const chartWidth = Object.keys(data).length * (thickness + spaceAround) + spaceAround;
+    const containerWidth = Math.abs(leftOverflow) + chartWidth + rightOverflow;
     return (
       <ScrollView
         style={styles.container}
@@ -150,11 +155,10 @@ export default class BarChart extends React.Component<Props, State> {
         <View style={styles.container}>
           <View style={[styles.canvas, styles.container]}>
             <Svg
-              style={{ backgroundColor: 'sliver' }}
-              width={Math.abs(leftOverflow) + chartWidth + rightOverflow}
+              width={containerWidth}
               height="100%"
-              viewBox={`${leftOverflow} ${-yScale * positiveHeight} ${Math.abs(leftOverflow) +
-                chartWidth} ${chartHeight}`}
+              viewBox={`${leftOverflow} ${-yScale *
+                positiveHeight} ${containerWidth} ${chartHeight}`}
               preserveAspectRatio="xMinYMin meet"
               onLayout={this.handleCanvasLayout}
             >
@@ -178,25 +182,24 @@ export default class BarChart extends React.Component<Props, State> {
           {showLabel ? (
             <View style={styles.canvas}>
               <Svg
-                width={Math.abs(leftOverflow) + chartWidth + rightOverflow}
+                width={containerWidth}
                 height={labelHeight + LABEL_PADDING * 2}
-                viewBox={`${leftOverflow} ${-LABEL_PADDING - labelHeight / 2} ${chartWidth +
-                  rightOverflow} ${labelHeight + LABEL_PADDING * 2}`}
-                preserveAspectRatio="xMidYMid meet"
+                viewBox={`${leftOverflow} ${-LABEL_PADDING -
+                  labelHeight / 2} ${containerWidth} ${labelHeight + LABEL_PADDING * 2}`}
               >
                 {Object.entries(data).map(([key, value], index) => (
                   <Label
                     key={key}
                     color={labelColor}
-                    fontSize={FONT_SIZE}
+                    fontSize={labelFontSize}
                     text={getLabel(key, +value, index)}
                     offset={{
                       x:
                         index * (thickness + spaceAround) +
                         spaceAround +
                         thickness / 2 -
-                        (FONT_SIZE / 3) * Math.sin((labelRotation * Math.PI) / 180),
-                      y: (FONT_SIZE / 3) * Math.cos((labelRotation * Math.PI) / 180),
+                        (labelFontSize / 3) * Math.sin((labelRotation * Math.PI) / 180),
+                      y: (labelFontSize / 3) * Math.cos((labelRotation * Math.PI) / 180),
                     }}
                     rotation={labelRotation}
                     onLayout={this.handleLabelLayout}
