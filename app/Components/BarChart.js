@@ -147,13 +147,15 @@ export default class BarChart extends React.Component<Props, State> {
         horizontal
         scrollEnabled={scrollable}
       >
-        <View style={{ flex: 1 }}>
-          <View style={[styles.canvas, { flex: 1 }]}>
+        <View style={styles.container}>
+          <View style={[styles.canvas, styles.container]}>
             <Svg
+              style={{ backgroundColor: 'sliver' }}
               width={Math.abs(leftOverflow) + chartWidth + rightOverflow}
               height="100%"
-              viewBox={`${leftOverflow} 0 ${Math.abs(leftOverflow) + chartWidth} ${chartHeight}`}
-              preserveAspectRatio="xMinYMax meet"
+              viewBox={`${leftOverflow} ${-yScale * positiveHeight} ${Math.abs(leftOverflow) +
+                chartWidth} ${chartHeight}`}
+              preserveAspectRatio="xMinYMin meet"
               onLayout={this.handleCanvasLayout}
             >
               {Object.entries(data).map(([key, value], index) => {
@@ -166,7 +168,7 @@ export default class BarChart extends React.Component<Props, State> {
                     color={coloring}
                     offset={{
                       x: index * (thickness + spaceAround) + spaceAround,
-                      y: yScale * positiveHeight - (currentValue > 0 ? currentValue : 0),
+                      y: currentValue > 0 ? -currentValue : 0,
                     }}
                   />
                 );

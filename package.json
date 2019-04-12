@@ -52,6 +52,6 @@
     }
   },
   "lint-staged": {
-    "*.(js|jsx)": ["yarn lint:fix", "yarn test", "git add"]
+    "*.(js|jsx)": ["yarn lint:fix", "git add"]
   }
 }

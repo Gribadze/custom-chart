@@ -27,8 +27,9 @@ const data = {
 
 const styles = StyleSheet.create({
   container: {
-    height: 400,
-    width: 300,
+    flex: 1,
+    // height: 400,
+    // width: 300,
     alignItems: 'center',
   },
   welcome: {
