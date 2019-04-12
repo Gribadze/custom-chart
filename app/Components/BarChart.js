@@ -155,11 +155,11 @@ export default class BarChart extends React.Component<Props, State> {
         <View style={styles.container}>
           <View style={[styles.canvas, styles.container]}>
             <Svg
-              width={containerWidth}
+              width={scrollable ? containerWidth : '100%'}
               height="100%"
               viewBox={`${leftOverflow} ${-yScale *
                 positiveHeight} ${containerWidth} ${chartHeight}`}
-              preserveAspectRatio="xMinYMin meet"
+              preserveAspectRatio="xMidYMid meet"
               onLayout={this.handleCanvasLayout}
             >
               {Object.entries(data).map(([key, value], index) => {
@@ -182,10 +182,11 @@ export default class BarChart extends React.Component<Props, State> {
           {showLabel ? (
             <View style={styles.canvas}>
               <Svg
-                width={containerWidth}
+                width={scrollable ? containerWidth : '100%'}
                 height={labelHeight + LABEL_PADDING * 2}
-                viewBox={`${leftOverflow} ${-LABEL_PADDING -
-                  labelHeight / 2} ${containerWidth} ${labelHeight + LABEL_PADDING * 2}`}
+                viewBox={`${0} ${-LABEL_PADDING - labelHeight / 2} ${containerWidth} ${labelHeight +
+                  LABEL_PADDING * 2}`}
+                preserveAspectRatio="xMidYMid slice"
               >
                 {Object.entries(data).map(([key, value], index) => (
                   <Label
