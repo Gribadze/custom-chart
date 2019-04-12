@@ -17,7 +17,7 @@ const data = {
   April: 5,
   May: 15,
   June: 25,
-  July: 25,
+  July: 30,
   August: 20,
   September: 15,
   October: 10,
@@ -27,9 +27,8 @@ const data = {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    // height: 200,
-    // width: 200,
+    height: 400,
+    width: 300,
     alignItems: 'center',
   },
   welcome: {
@@ -47,7 +46,7 @@ const styles = StyleSheet.create({
 export default function App() {
   return (
     <View style={styles.container}>
-      <BarChart data={data} labelRotation={60} />
+      <BarChart data={data} labelRotation={30} maxValue={40} />
     </View>
   );
 }
