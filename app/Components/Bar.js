@@ -26,6 +26,14 @@ export default class Bar extends React.PureComponent<Props> {
 
   render() {
     const { height, width, color, offset } = this.props;
-    return <Rect x={offset.x} y={offset.y} width={width} height={Math.abs(height)} fill={color} />;
+    return (
+      <Rect
+        x={offset.x}
+        y={offset.y}
+        width={Math.abs(width)}
+        height={Math.abs(height)}
+        fill={color}
+      />
+    );
   }
 }

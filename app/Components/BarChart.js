@@ -4,10 +4,10 @@ import { ScrollView, View } from 'react-native';
 import type { LayoutEvent } from 'react-native/Libraries/Types/CoreEventTypes';
 import { Svg } from 'react-native-svg';
 import styles from './BarChart.styles';
-import Bar from './Bar';
-import Label from './Label';
+import LabelGroup from './LabelGroup';
+import BarGroup from './BarGroup';
 
-const LABEL_PADDING = 10;
+const LABEL_PADDING = 0;
 
 type DefaultProps = {
   getValue: (key: string, value: number, index?: number) => number,
@@ -16,6 +16,7 @@ type DefaultProps = {
   spaceAround: number,
   scrollable: boolean,
   coloring: string,
+  vertical: boolean,
   labelColor: string,
   showLabel: boolean,
   labelRotation: number,
@@ -34,7 +35,7 @@ type Props = DefaultProps & {
   spaceAround?: number,
   scrollable?: boolean,
   coloring?: string,
-  // horizontal?: boolean,
+  vertical?: boolean,
   labelColor?: string,
   // clickable?: boolean,
   showLabel?: boolean,
@@ -46,7 +47,7 @@ type State = {
   positiveHeight: number,
   negativeHeight: number,
   labelHeight: number,
-  yScale: number,
+  scale: number,
   leftOverflow: number,
   rightOverflow: number,
 };
@@ -59,7 +60,7 @@ export default class BarChart extends React.Component<Props, State> {
     spaceAround: 5,
     scrollable: true,
     coloring: '#3498DB',
-    // horizontal: false,
+    vertical: false,
     labelColor: '#000000',
     // clickable: false,
     showLabel: true,
@@ -72,7 +73,7 @@ export default class BarChart extends React.Component<Props, State> {
   state = {
     positiveHeight: 0,
     negativeHeight: 0,
-    yScale: 1,
+    scale: 1,
     labelHeight: 0,
     leftOverflow: 0,
     rightOverflow: 0,
@@ -96,28 +97,88 @@ export default class BarChart extends React.Component<Props, State> {
 
   handleCanvasLayout = ({ nativeEvent }: LayoutEvent) => {
     const {
-      layout: { height },
+      layout: { height, width },
     } = nativeEvent;
+    const { vertical } = this.props;
     const { positiveHeight, negativeHeight } = this.state;
-    this.setState({ yScale: height / (positiveHeight - negativeHeight) });
+    this.setState({ scale: (vertical ? width : height) / (positiveHeight - negativeHeight) });
   };
 
   handleLabelLayout = ({ nativeEvent }: LayoutEvent) => {
     const {
-      layout: { height, width, x },
+      layout: { height, width, x, y },
     } = nativeEvent;
+    const { vertical } = this.props;
     this.setState((state, props) => ({
-      labelHeight: Math.max(height, state.labelHeight),
-      leftOverflow: Math.min(x, state.leftOverflow),
+      labelHeight: Math.max(vertical ? width : height, state.labelHeight),
+      leftOverflow: Math.min(vertical ? y : x, state.leftOverflow),
       rightOverflow: Math.max(
         state.leftOverflow +
-          x +
-          width -
+          (vertical ? y + height : width + x) -
           (Object.keys(props.data).length * (props.thickness + props.spaceAround) +
             props.spaceAround),
         state.rightOverflow,
       ),
     }));
+  };
+
+  calcLabelOffset = (index: number) => {
+    const { vertical, thickness, spaceAround, labelFontSize, labelRotation } = this.props;
+    const [step, baseLine] = [index * (thickness + spaceAround) + spaceAround + thickness / 2, 0];
+    return vertical
+      ? {
+          x: baseLine - (labelFontSize / 3) * Math.sin((labelRotation * Math.PI) / 180),
+          y: step + (labelFontSize / 3) * Math.cos((labelRotation * Math.PI) / 180),
+        }
+      : {
+          x: step - (labelFontSize / 3) * Math.sin((labelRotation * Math.PI) / 180),
+          y: baseLine + (labelFontSize / 3) * Math.cos((labelRotation * Math.PI) / 180),
+        };
+  };
+
+  calcBarRect = (scale: number) => (index: number) => {
+    const { data, thickness, spaceAround, vertical, getValue } = this.props;
+    const [key, value] = Object.entries(data)[index];
+    const currentValue = scale * getValue(key, +value, index);
+    const step = index * (thickness + spaceAround) + spaceAround;
+    return vertical
+      ? {
+          offset: {
+            x: currentValue < 0 ? currentValue : 0,
+            y: step,
+          },
+          height: thickness,
+          width: currentValue,
+        }
+      : {
+          offset: {
+            x: step,
+            y: currentValue > 0 ? -currentValue : 0,
+          },
+          height: currentValue,
+          width: thickness,
+        };
+  };
+
+  calcCanvasProps = (
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    fullSize?: boolean = false,
+  ) => {
+    const { vertical, scrollable } = this.props;
+    return vertical
+      ? {
+          width: fullSize ? '100%' : height,
+          height: scrollable ? width : '100%',
+          viewBox: `${y} ${x} ${height} ${width}`,
+        }
+      : {
+          width: scrollable ? width : '100%',
+          height: fullSize ? '100%' : height,
+          viewBox: `${x} ${y} ${width} ${height}`,
+        };
   };
 
   render() {
@@ -126,12 +187,12 @@ export default class BarChart extends React.Component<Props, State> {
       thickness,
       spaceAround,
       coloring,
+      vertical,
       labelColor,
       labelRotation,
       labelFontSize,
       showLabel,
       scrollable,
-      getValue,
       getLabel,
     } = this.props;
     const {
@@ -140,72 +201,63 @@ export default class BarChart extends React.Component<Props, State> {
       labelHeight,
       leftOverflow,
       rightOverflow,
-      yScale,
+      scale,
     } = this.state;
-    const chartHeight = yScale * (positiveHeight - negativeHeight);
+    const chartHeight = scale * (positiveHeight - negativeHeight);
     const chartWidth = Object.keys(data).length * (thickness + spaceAround) + spaceAround;
     const containerWidth = Math.abs(leftOverflow) + chartWidth + rightOverflow;
     return (
       <ScrollView
         style={styles.container}
         contentContainerStyle={styles.contentContainer}
-        horizontal
+        horizontal={!vertical}
         scrollEnabled={scrollable}
       >
-        <View style={styles.container}>
+        <View
+          style={[
+            styles.container,
+            vertical && {
+              flexDirection: 'row-reverse',
+              alignItems: 'center',
+            },
+          ]}
+        >
           <View style={[styles.canvas, styles.container]}>
             <Svg
-              width={scrollable ? containerWidth : '100%'}
-              height="100%"
-              viewBox={`${leftOverflow} ${-yScale *
-                positiveHeight} ${containerWidth} ${chartHeight}`}
-              preserveAspectRatio="xMidYMid meet"
+              {...this.calcCanvasProps(
+                leftOverflow,
+                vertical ? scale * negativeHeight : -scale * positiveHeight,
+                containerWidth - leftOverflow,
+                chartHeight,
+                true,
+              )}
+              preserveAspectRatio="none"
               onLayout={this.handleCanvasLayout}
             >
-              {Object.entries(data).map(([key, value], index) => {
-                const currentValue = yScale * getValue(key, +value, index);
-                return (
-                  <Bar
-                    key={key}
-                    height={currentValue}
-                    width={thickness}
-                    color={coloring}
-                    offset={{
-                      x: index * (thickness + spaceAround) + spaceAround,
-                      y: currentValue > 0 ? -currentValue : 0,
-                    }}
-                  />
-                );
-              })}
+              <BarGroup data={data} barColor={coloring} getValue={this.calcBarRect(scale)} />
             </Svg>
           </View>
           {showLabel ? (
             <View style={styles.canvas}>
               <Svg
-                width={scrollable ? containerWidth : '100%'}
-                height={labelHeight + LABEL_PADDING * 2}
-                viewBox={`${0} ${-LABEL_PADDING - labelHeight / 2} ${containerWidth} ${labelHeight +
-                  LABEL_PADDING * 2}`}
-                preserveAspectRatio="xMidYMid slice"
+                {...this.calcCanvasProps(
+                  leftOverflow,
+                  -(labelHeight / 2 + LABEL_PADDING),
+                  containerWidth,
+                  labelHeight + LABEL_PADDING * 2,
+                )}
+                x={leftOverflow}
+                preserveAspectRatio="none"
               >
-                {Object.entries(data).map(([key, value], index) => (
-                  <Label
-                    key={key}
-                    color={labelColor}
-                    fontSize={labelFontSize}
-                    text={getLabel(key, +value, index)}
-                    offset={{
-                      x:
-                        index * (thickness + spaceAround) +
-                        spaceAround +
-                        thickness / 2 -
-                        (labelFontSize / 3) * Math.sin((labelRotation * Math.PI) / 180),
-                      y: (labelFontSize / 3) * Math.cos((labelRotation * Math.PI) / 180),
-                    }}
-                    rotation={labelRotation}
-                    onLayout={this.handleLabelLayout}
-                  />
-                ))}
+                <LabelGroup
+                  data={data}
+                  fontColor={labelColor}
+                  fontSize={labelFontSize}
+                  textRotation={labelRotation}
+                  getLabel={getLabel}
+                  getOffset={this.calcLabelOffset}
+                  onLayout={this.handleLabelLayout}
+                />
               </Svg>
             </View>
           ) : null}

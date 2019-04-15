@@ -1,6 +1,5 @@
 // @flow
 import React from 'react';
-import type { LayoutEvent } from 'react-native/Libraries/Types/CoreEventTypes';
 import { G, Text } from 'react-native-svg';
 
 type DefaultProps = {
@@ -19,7 +18,6 @@ type Props = DefaultProps & {
     y: number,
   },
   rotation: number,
-  onLayout: (e: LayoutEvent) => void,
 };
 
 export default class Label extends React.PureComponent<Props> {
@@ -27,15 +25,10 @@ export default class Label extends React.PureComponent<Props> {
     offset: { x: 0, y: 0 },
   };
 
-  handleLayout = (e: LayoutEvent) => {
-    const { onLayout } = this.props;
-    onLayout(e);
-  };
-
   render() {
     const { color, fontSize, text, offset, rotation } = this.props;
     return (
-      <G origin={`${offset.x}, ${offset.y}`} rotation={rotation} onLayout={this.handleLayout}>
+      <G origin={`${offset.x}, ${offset.y}`} rotation={rotation}>
         <Text fill={color} fontSize={fontSize} textAnchor="middle" x={offset.x} y={offset.y}>
           {text}
         </Text>

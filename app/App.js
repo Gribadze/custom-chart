@@ -23,14 +23,24 @@ const data = {
   October: 10,
   November: 5,
   December: -10,
+  January2: -20,
+  February2: -10,
+  March2: -5,
+  April2: 5,
+  May2: 15,
+  June2: 25,
+  July2: 30,
+  August2: 20,
+  September2: 15,
+  October2: 10,
+  November2: 5,
+  December2: -10,
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // height: 400,
-    // width: 300,
-    alignItems: 'center',
+    flexGrow: 1,
   },
   welcome: {
     fontSize: 20,
@@ -47,7 +57,7 @@ const styles = StyleSheet.create({
 export default function App() {
   return (
     <View style={styles.container}>
-      <BarChart data={data} labelRotation={90} maxValue={40} />
+      <BarChart data={data} labelRotation={30} />
     </View>
   );
 }
