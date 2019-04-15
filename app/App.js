@@ -8,7 +8,7 @@
 
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { BarChart } from './Components/Charts';
+import { BarChart, LineChart } from './Components/Charts';
 
 const data = {
   January: -20,
@@ -39,18 +39,7 @@ const data = {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     flexGrow: 1,
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
   },
 });
 
@@ -58,6 +47,7 @@ export default function App() {
   return (
     <View style={styles.container}>
       <BarChart data={data} labelRotation={30} />
+      <LineChart data={data} labelRotation={30} vertical />
     </View>
   );
 }
