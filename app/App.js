@@ -46,8 +46,8 @@ const styles = StyleSheet.create({
 export default function App() {
   return (
     <View style={styles.container}>
-      <BarChart data={data} labelRotation={30} />
-      <LineChart data={data} labelRotation={30} vertical />
+      <BarChart data={data} thickness={40} spaceAround={5} />
+      <LineChart data={data} spaceAround={20} maxValue={35} minValue={-30} />
     </View>
   );
 }

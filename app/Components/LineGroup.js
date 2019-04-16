@@ -1,23 +1,31 @@
 // @flow
 import React from 'react';
 import { Polyline } from 'react-native-svg';
-import Point from './Point';
+import Label from './Label';
 
-type Props = {
+type DefaultProps = {
+  textRotation: number,
+};
+
+type Props = DefaultProps & {
   data: { [string]: number },
-  barColor: string,
-  getValue: (index: number) => { height: number, width: number, offset: { x: number, y: number } },
+  thickness: number,
+  color: string,
+  fontColor: string,
+  fontSize: number,
+  textRotation?: number,
+  getValue: (index: number) => { value: number, offset: { x: number, y: number } },
 };
 
 export default class LineGroup extends React.PureComponent<Props> {
+  static defaultProps = {
+    textRotation: 0,
+  };
+
   render() {
-    const { data, barColor, getValue } = this.props;
+    const { data, thickness, color, fontColor, fontSize, textRotation, getValue } = this.props;
     return (
       <>
-        {Object.keys(data).map((key, index) => {
-          const { height, width, offset } = getValue(index);
-          return <Point key={key} height={height} width={width} color={barColor} offset={offset} />;
-        })}
         <Polyline
           points={Object.keys(data)
             .map((key, index) => {
@@ -28,9 +36,22 @@ export default class LineGroup extends React.PureComponent<Props> {
             })
             .join(' ')}
           fill="none"
-          stroke={barColor}
-          strokeWidth={2}
+          stroke={color}
+          strokeWidth={thickness}
         />
+        {Object.keys(data).map((key, index) => {
+          const { value, offset } = getValue(index);
+          return (
+            <Label
+              key={key}
+              offset={offset}
+              color={fontColor}
+              fontSize={fontSize}
+              rotation={textRotation}
+              text={value.toString()}
+            />
+          );
+        })}
       </>
     );
   }

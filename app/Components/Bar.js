@@ -1,6 +1,7 @@
 // @flow
 import React from 'react';
 import { Rect } from 'react-native-svg/index';
+import Label from './Label';
 
 type DefaultProps = {
   offset: {
@@ -13,6 +14,10 @@ type Props = DefaultProps & {
   height: number,
   width: number,
   color: string,
+  fontColor: string,
+  fontSize: number,
+  text: string,
+  textRotation: number,
   offset?: {
     x: number,
     y: number,
@@ -25,15 +30,22 @@ export default class Bar extends React.PureComponent<Props> {
   };
 
   render() {
-    const { height, width, color, offset } = this.props;
+    const { height, width, color, fontColor, fontSize, text, offset, textRotation } = this.props;
+    const [absWidth, absHeight] = [Math.abs(width), Math.abs(+height)];
     return (
-      <Rect
-        x={offset.x}
-        y={offset.y}
-        width={Math.abs(width)}
-        height={Math.abs(height)}
-        fill={color}
-      />
+      <>
+        <Rect x={offset.x} y={offset.y} width={absWidth} height={absHeight} fill={color} />
+        <Label
+          color={fontColor}
+          fontSize={fontSize}
+          offset={{
+            x: offset.x + absWidth / 2,
+            y: offset.y + absHeight / 2,
+          }}
+          rotation={textRotation}
+          text={text}
+        />
+      </>
     );
   }
 }

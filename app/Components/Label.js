@@ -27,9 +27,13 @@ export default class Label extends React.PureComponent<Props> {
 
   render() {
     const { color, fontSize, text, offset, rotation } = this.props;
+    const [x, y] = [
+      offset.x - (fontSize / 3) * Math.sin((rotation * Math.PI) / 180),
+      offset.y + (fontSize / 2) * Math.cos((rotation * Math.PI) / 180),
+    ];
     return (
-      <G origin={`${offset.x}, ${offset.y}`} rotation={rotation}>
-        <Text fill={color} fontSize={fontSize} textAnchor="middle" x={offset.x} y={offset.y}>
+      <G origin={`${x}, ${y}`} rotation={rotation}>
+        <Text fill={color} fontSize={fontSize} textAnchor="middle" x={x} y={y}>
           {text}
         </Text>
       </G>

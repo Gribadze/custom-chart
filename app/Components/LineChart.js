@@ -7,7 +7,7 @@ import styles from './BarChart.styles';
 import LabelGroup from './LabelGroup';
 import LineGroup from './LineGroup';
 
-const LABEL_PADDING = 0;
+const LABEL_PADDING = 10;
 
 type DefaultProps = {
   getValue: (key: string, value: number, index?: number) => number,
@@ -56,10 +56,10 @@ export default class LineChart extends React.Component<Props, State> {
   static defaultProps: DefaultProps = {
     getValue: (key: string, value: mixed) => +value,
     getLabel: (key: string) => key,
-    thickness: 40,
-    spaceAround: 5,
+    thickness: 2,
+    spaceAround: 40,
     scrollable: true,
-    coloring: '#3498DB',
+    coloring: '#F1C40F',
     vertical: false,
     labelColor: '#000000',
     // clickable: false,
@@ -100,6 +100,7 @@ export default class LineChart extends React.Component<Props, State> {
       layout: { height, width },
     } = nativeEvent;
     const { vertical } = this.props;
+    console.log('canvas', nativeEvent);
     const { positiveHeight, negativeHeight } = this.state;
     this.setState({ scale: (vertical ? width : height) / (positiveHeight - negativeHeight) });
   };
@@ -109,55 +110,55 @@ export default class LineChart extends React.Component<Props, State> {
       layout: { height, width, x, y },
     } = nativeEvent;
     const { vertical } = this.props;
+    console.log('label', nativeEvent);
     this.setState((state, props) => ({
       labelHeight: Math.max(vertical ? width : height, state.labelHeight),
       leftOverflow: Math.min(vertical ? y : x, state.leftOverflow),
       rightOverflow: Math.max(
         state.leftOverflow +
           (vertical ? y + height : width + x) -
-          (Object.keys(props.data).length * (props.thickness + props.spaceAround) +
-            props.spaceAround),
+          Object.keys(props.data).length * props.spaceAround,
         state.rightOverflow,
       ),
     }));
   };
 
   calcLabelOffset = (index: number) => {
-    const { vertical, thickness, spaceAround, labelFontSize, labelRotation } = this.props;
-    const [step, baseLine] = [index * (thickness + spaceAround) + spaceAround + thickness / 2, 0];
+    const { vertical, spaceAround } = this.props;
+    const [step, baseLine] = [index * spaceAround, 0];
     return vertical
       ? {
-          x: baseLine - (labelFontSize / 3) * Math.sin((labelRotation * Math.PI) / 180),
-          y: step + (labelFontSize / 3) * Math.cos((labelRotation * Math.PI) / 180),
+          x: baseLine,
+          y: step,
         }
       : {
-          x: step - (labelFontSize / 3) * Math.sin((labelRotation * Math.PI) / 180),
-          y: baseLine + (labelFontSize / 3) * Math.cos((labelRotation * Math.PI) / 180),
+          x: step,
+          y: baseLine,
         };
   };
 
-  calcBarRect = (scale: number) => (index: number) => {
-    const { data, thickness, spaceAround, vertical, getValue } = this.props;
+  calcLinePoint = (scale: number) => (index: number) => {
+    const { data, spaceAround, vertical, getValue } = this.props;
     const [key, value] = Object.entries(data)[index];
-    const currentValue = scale * getValue(key, +value, index);
-    const step = index * (thickness + spaceAround) + spaceAround + thickness / 2;
-    return vertical
-      ? {
-          offset: {
-            x: currentValue,
-            y: step,
-          },
-          height: thickness,
-          width: currentValue,
-        }
-      : {
-          offset: {
-            x: step,
-            y: -currentValue,
-          },
-          height: currentValue,
-          width: thickness,
-        };
+    const currentValue = getValue(key, +value, index);
+    const scaledValue = scale * currentValue;
+    const step = index * spaceAround;
+    return {
+      value: currentValue,
+      ...(vertical
+        ? {
+            offset: {
+              x: -scaledValue,
+              y: step,
+            },
+          }
+        : {
+            offset: {
+              x: step,
+              y: -scaledValue,
+            },
+          }),
+    };
   };
 
   calcCanvasProps = (
@@ -204,7 +205,7 @@ export default class LineChart extends React.Component<Props, State> {
       scale,
     } = this.state;
     const chartHeight = scale * (positiveHeight - negativeHeight);
-    const chartWidth = Object.keys(data).length * (thickness + spaceAround) + spaceAround;
+    const chartWidth = Object.keys(data).length * spaceAround;
     const containerWidth = Math.abs(leftOverflow) + chartWidth + rightOverflow;
     return (
       <ScrollView
@@ -227,14 +228,22 @@ export default class LineChart extends React.Component<Props, State> {
               {...this.calcCanvasProps(
                 leftOverflow,
                 vertical ? scale * negativeHeight : -scale * positiveHeight,
-                containerWidth - leftOverflow,
+                containerWidth,
                 chartHeight,
                 true,
               )}
               preserveAspectRatio="none"
               onLayout={this.handleCanvasLayout}
             >
-              <LineGroup data={data} barColor={coloring} getValue={this.calcBarRect(scale)} />
+              <LineGroup
+                data={data}
+                color={coloring}
+                thickness={thickness}
+                fontColor={labelColor}
+                fontSize={labelFontSize}
+                // textRotation={labelRotation}
+                getValue={this.calcLinePoint(scale)}
+              />
             </Svg>
           </View>
           {showLabel ? (
@@ -246,7 +255,6 @@ export default class LineChart extends React.Component<Props, State> {
                   containerWidth,
                   labelHeight + LABEL_PADDING * 2,
                 )}
-                x={leftOverflow}
                 preserveAspectRatio="none"
               >
                 <LabelGroup

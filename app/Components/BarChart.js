@@ -7,7 +7,7 @@ import styles from './BarChart.styles';
 import LabelGroup from './LabelGroup';
 import BarGroup from './BarGroup';
 
-const LABEL_PADDING = 0;
+const LABEL_PADDING = 10;
 
 type DefaultProps = {
   getValue: (key: string, value: number, index?: number) => number,
@@ -123,41 +123,45 @@ export default class BarChart extends React.Component<Props, State> {
   };
 
   calcLabelOffset = (index: number) => {
-    const { vertical, thickness, spaceAround, labelFontSize, labelRotation } = this.props;
+    const { vertical, thickness, spaceAround } = this.props;
     const [step, baseLine] = [index * (thickness + spaceAround) + spaceAround + thickness / 2, 0];
     return vertical
       ? {
-          x: baseLine - (labelFontSize / 3) * Math.sin((labelRotation * Math.PI) / 180),
-          y: step + (labelFontSize / 3) * Math.cos((labelRotation * Math.PI) / 180),
+          x: baseLine,
+          y: step,
         }
       : {
-          x: step - (labelFontSize / 3) * Math.sin((labelRotation * Math.PI) / 180),
-          y: baseLine + (labelFontSize / 3) * Math.cos((labelRotation * Math.PI) / 180),
+          x: step,
+          y: baseLine,
         };
   };
 
   calcBarRect = (scale: number) => (index: number) => {
     const { data, thickness, spaceAround, vertical, getValue } = this.props;
     const [key, value] = Object.entries(data)[index];
-    const currentValue = scale * getValue(key, +value, index);
+    const currentValue = getValue(key, +value, index);
+    const scaledValue = scale * currentValue;
     const step = index * (thickness + spaceAround) + spaceAround;
-    return vertical
-      ? {
-          offset: {
-            x: currentValue < 0 ? currentValue : 0,
-            y: step,
-          },
-          height: thickness,
-          width: currentValue,
-        }
-      : {
-          offset: {
-            x: step,
-            y: currentValue > 0 ? -currentValue : 0,
-          },
-          height: currentValue,
-          width: thickness,
-        };
+    return {
+      value: currentValue,
+      ...(vertical
+        ? {
+            offset: {
+              x: scaledValue < 0 ? scaledValue : 0,
+              y: step,
+            },
+            height: thickness,
+            width: scaledValue,
+          }
+        : {
+            offset: {
+              x: step,
+              y: scaledValue > 0 ? -scaledValue : 0,
+            },
+            height: scaledValue,
+            width: thickness,
+          }),
+    };
   };
 
   calcCanvasProps = (
@@ -227,14 +231,21 @@ export default class BarChart extends React.Component<Props, State> {
               {...this.calcCanvasProps(
                 leftOverflow,
                 vertical ? scale * negativeHeight : -scale * positiveHeight,
-                containerWidth - leftOverflow,
+                containerWidth,
                 chartHeight,
                 true,
               )}
               preserveAspectRatio="none"
               onLayout={this.handleCanvasLayout}
             >
-              <BarGroup data={data} barColor={coloring} getValue={this.calcBarRect(scale)} />
+              <BarGroup
+                data={data}
+                color={coloring}
+                getValue={this.calcBarRect(scale)}
+                fontSize={labelFontSize}
+                fontColor={labelColor}
+                // textRotation={labelRotation}
+              />
             </Svg>
           </View>
           {showLabel ? (
