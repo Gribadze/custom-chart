@@ -38,7 +38,7 @@ export default class BarCanvas extends React.PureComponent<Props> {
       ...(vertical
         ? {
             offset: {
-              x: scaledValue < 0 ? scaledValue : 0,
+              x: 0,
               y: step,
             },
             height: thickness,
@@ -47,7 +47,7 @@ export default class BarCanvas extends React.PureComponent<Props> {
         : {
             offset: {
               x: step,
-              y: scaledValue > 0 ? -scaledValue : 0,
+              y: 0,
             },
             height: scaledValue,
             width: thickness,

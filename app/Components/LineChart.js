@@ -55,6 +55,6 @@ export default class LineChart extends React.PureComponent<Props> {
   };
 
   render() {
-    return <Chart type={ChartType.BAR} {...this.props} />;
+    return <Chart type={ChartType.LINE} {...this.props} />;
   }
 }

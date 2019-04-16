@@ -32,15 +32,19 @@ export default class Bar extends React.PureComponent<Props> {
   render() {
     const { height, width, color, fontColor, fontSize, text, offset, textRotation } = this.props;
     const [absWidth, absHeight] = [Math.abs(width), Math.abs(+height)];
+    const [x, y] = [
+      width > 0 ? offset.x : width - offset.x,
+      height > 0 ? -height - offset.y : offset.y,
+    ];
     return (
       <>
-        <Rect x={offset.x} y={offset.y} width={absWidth} height={absHeight} fill={color} />
+        <Rect x={x} y={y} width={absWidth} height={absHeight} fill={color} />
         <Label
           color={fontColor}
           fontSize={fontSize}
           offset={{
-            x: offset.x + absWidth / 2,
-            y: offset.y + absHeight / 2,
+            x: x + absWidth / 2,
+            y: y + absHeight / 2,
           }}
           rotation={textRotation}
           text={text}
