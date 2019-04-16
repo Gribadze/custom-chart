@@ -1,6 +1,6 @@
 // @flow
 import React from 'react';
-import { Polyline } from 'react-native-svg';
+import { Polyline } from 'react-native-svg/index';
 import Label from './Label';
 
 type DefaultProps = {

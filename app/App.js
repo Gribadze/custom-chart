@@ -8,7 +8,8 @@
 
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { BarChart, LineChart } from './Components/Charts';
+import BarChart from './Components/BarChart';
+import LineChart from './Components/LineChart';
 
 const data = {
   January: -20,
@@ -46,8 +47,8 @@ const styles = StyleSheet.create({
 export default function App() {
   return (
     <View style={styles.container}>
-      <BarChart data={data} thickness={40} spaceAround={5} />
-      <LineChart data={data} spaceAround={20} maxValue={35} minValue={-30} />
+      <BarChart data={data} />
+      <LineChart data={data} />
     </View>
   );
 }

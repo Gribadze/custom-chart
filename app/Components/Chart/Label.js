@@ -1,6 +1,6 @@
 // @flow
 import React from 'react';
-import { G, Text } from 'react-native-svg';
+import { G, Text } from 'react-native-svg/index';
 
 type DefaultProps = {
   offset: {

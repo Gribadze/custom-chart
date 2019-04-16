@@ -1,7 +1,7 @@
 // @flow
 import React from 'react';
 import type { LayoutEvent } from 'react-native/Libraries/Types/CoreEventTypes';
-import { G } from 'react-native-svg';
+import { G } from 'react-native-svg/index';
 import Label from './Label';
 
 type Props = {
