@@ -5,26 +5,25 @@ import { G } from 'react-native-svg/index';
 import Label from './Label';
 
 type Props = {
-  data: { [string]: number },
+  data: string[],
   fontColor: string,
   fontSize: number,
   textRotation: number,
-  getLabel: (key: string, value: number, index: number) => string,
   getOffset: (index: number) => { x: number, y: number },
   onLayout: (e: LayoutEvent) => void,
 };
 
 class LabelGroup extends React.PureComponent<Props> {
   render() {
-    const { data, fontColor, fontSize, textRotation, getLabel, getOffset, onLayout } = this.props;
+    const { data, fontColor, fontSize, textRotation, getOffset, onLayout } = this.props;
     return (
       <G onLayout={onLayout}>
-        {Object.entries(data).map(([key, value], index) => (
+        {data.map((text, index) => (
           <Label
-            key={key}
+            key={text}
             color={fontColor}
             fontSize={fontSize}
-            text={getLabel(key, +value, index)}
+            text={text}
             offset={getOffset(index)}
             rotation={textRotation}
           />

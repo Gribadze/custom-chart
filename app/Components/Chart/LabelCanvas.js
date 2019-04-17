@@ -16,8 +16,7 @@ type Props = {
   positiveHeight: number,
   containerWidth: number,
   chartHeight: number,
-  data: { [string]: number },
-  coloring: string,
+  labels: string[],
   labelHeight: number,
   labelFontSize: number,
   labelColor: string,
@@ -25,7 +24,6 @@ type Props = {
   thickness: number,
   spaceAround: number,
   scrollable: boolean,
-  getLabel: (key: string, value: number, index: number) => string,
   onLayout: (e: LayoutEvent) => void,
 };
 
@@ -65,11 +63,10 @@ export default class LabelCanvas extends React.PureComponent<Props> {
       onLayout,
       labelHeight,
       containerWidth,
-      data,
+      labels,
       labelColor,
       labelFontSize,
       labelRotation,
-      getLabel,
     } = this.props;
     return (
       <View style={styles.canvas}>
@@ -84,11 +81,10 @@ export default class LabelCanvas extends React.PureComponent<Props> {
           preserveAspectRatio="none"
         >
           <LabelGroup
-            data={data}
+            data={labels}
             fontColor={labelColor}
             fontSize={labelFontSize}
             textRotation={labelRotation}
-            getLabel={getLabel}
             getOffset={this.calcLabelOffset}
             onLayout={onLayout}
           />

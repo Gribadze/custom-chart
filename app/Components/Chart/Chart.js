@@ -29,7 +29,7 @@ type DefaultProps = {
 
 type Props = DefaultProps & {
   type: string,
-  data: { [string]: number },
+  data: { [key: string]: { [category: string]: number } },
   getValue?: (key: string, value: number, index?: number) => number,
   getLabel?: (key: string, value?: number, index?: number) => string,
   // eslint-disable-next-line react/no-unused-prop-types
@@ -39,7 +39,7 @@ type Props = DefaultProps & {
   thickness: number,
   spaceAround: number,
   scrollable?: boolean,
-  coloring: string,
+  coloring: string | string[],
   vertical?: boolean,
   labelColor: string,
   // clickable?: boolean,
@@ -80,13 +80,11 @@ export default class Chart extends React.Component<Props, State> {
   };
 
   static getDerivedStateFromProps(props: Props) {
-    const positiveHeight = Object.entries(props.data).reduce((acc, [key, value], index) => {
-      const currentValue = props.getValue(key, +value, index);
-      return acc > currentValue ? acc : currentValue;
+    const positiveHeight = Object.values(props.data).reduce((acc, category) => {
+      return Math.max(acc, ...Object.values(category).map(value => +value));
     }, props.maxValue || 0);
-    const negativeHeight = Object.entries(props.data).reduce((acc, [key, value], index) => {
-      const currentValue = props.getValue(key, +value, index);
-      return acc < currentValue ? acc : currentValue;
+    const negativeHeight = Object.values(props.data).reduce((acc, category) => {
+      return Math.min(acc, ...Object.values(category).map(value => +value));
     }, props.minValue || 0);
     return {
       positiveHeight,
@@ -164,6 +162,7 @@ export default class Chart extends React.Component<Props, State> {
           {showLabel ? (
             <LabelCanvas
               {...this.props}
+              labels={Object.keys(data)}
               leftOverflow={leftOverflow}
               scale={scale}
               negativeHeight={negativeHeight}

@@ -9,33 +9,20 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import BarChart from './Components/BarChart';
-import LineChart from './Components/LineChart';
 
 const data = {
-  January: -20,
-  February: -10,
-  March: -5,
-  April: 5,
-  May: 15,
-  June: 25,
-  July: 30,
-  August: 20,
-  September: 15,
-  October: 10,
-  November: 5,
-  December: -10,
-  January2: -20,
-  February2: -10,
-  March2: -5,
-  April2: 5,
-  May2: 15,
-  June2: 25,
-  July2: 30,
-  August2: 20,
-  September2: 15,
-  October2: 10,
-  November2: 5,
-  December2: -10,
+  January: { '2018': -20, '2019': -25 },
+  February: { '2018': -10, '2019': -15 },
+  March: { '2018': 3, '2019': -5 },
+  April: { '2018': 10, '2019': 5 },
+  May: { '2018': -20, '2019': -25 },
+  June: { '2018': -20, '2019': -25 },
+  July: { '2018': -20, '2019': -25 },
+  August: { '2018': -20, '2019': -25 },
+  September: { '2018': -20, '2019': -25 },
+  October: { '2018': -20, '2019': -25 },
+  November: { '2018': -20, '2019': -25 },
+  December: { '2018': -20, '2019': -25 },
 };
 
 const styles = StyleSheet.create({
@@ -47,8 +34,7 @@ const styles = StyleSheet.create({
 export default function App() {
   return (
     <View style={styles.container}>
-      <BarChart data={data} />
-      <LineChart data={data} />
+      <BarChart data={data} coloring={['yellow', 'blue']} labelRotation={60} vertical />
     </View>
   );
 }
