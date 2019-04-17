@@ -3,8 +3,6 @@ import React from 'react';
 import Chart, { ChartType } from './Chart/Chart';
 
 type DefaultProps = {
-  getValue: (key: string, value: number, index?: number) => number,
-  getLabel: (key: string, value?: number, index?: number) => string,
   thickness: number,
   spaceAround: number,
   scrollable: boolean,
@@ -18,8 +16,6 @@ type DefaultProps = {
 
 type Props = DefaultProps & {
   data: { [key: string]: { [category: string]: number } },
-  getValue?: (key: string, value: number, index?: number) => number,
-  getLabel?: (key: string, value?: number, index?: number) => string,
   // eslint-disable-next-line react/no-unused-prop-types
   maxValue?: number,
   // eslint-disable-next-line react/no-unused-prop-types
@@ -38,8 +34,6 @@ type Props = DefaultProps & {
 
 export default class BarChart extends React.PureComponent<Props> {
   static defaultProps: DefaultProps = {
-    getValue: (key: string, value: mixed) => +value,
-    getLabel: (key: string) => key,
     thickness: 40,
     spaceAround: 5,
     scrollable: true,

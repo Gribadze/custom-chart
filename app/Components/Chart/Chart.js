@@ -19,8 +19,6 @@ const ChartCanvas = {
 };
 
 type DefaultProps = {
-  getValue: (key: string, value: number, index?: number) => number,
-  getLabel: (key: string, value?: number, index?: number) => string,
   scrollable: boolean,
   vertical: boolean,
   showLabel: boolean,
@@ -30,8 +28,6 @@ type DefaultProps = {
 type Props = DefaultProps & {
   type: string,
   data: { [key: string]: { [category: string]: number } },
-  getValue?: (key: string, value: number, index?: number) => number,
-  getLabel?: (key: string, value?: number, index?: number) => string,
   // eslint-disable-next-line react/no-unused-prop-types
   maxValue?: number,
   // eslint-disable-next-line react/no-unused-prop-types
@@ -59,8 +55,6 @@ type State = {
 
 export default class Chart extends React.Component<Props, State> {
   static defaultProps: DefaultProps = {
-    getValue: (key: string, value: mixed) => +value,
-    getLabel: (key: string) => key,
     scrollable: true,
     vertical: false,
     // clickable: false,

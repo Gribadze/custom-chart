@@ -36,7 +36,7 @@ export default function App() {
   return (
     <View style={styles.container}>
       <BarChart data={data} coloring={['yellow', 'blue']} labelRotation={60} vertical />
-      <LineChart data={data} coloring={['yellow', 'blue']} />
+      <LineChart data={data} coloring={['green', 'cyan']} />
     </View>
   );
 }
