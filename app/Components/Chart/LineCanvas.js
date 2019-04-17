@@ -14,27 +14,51 @@ type Props = {
   positiveHeight: number,
   containerWidth: number,
   chartHeight: number,
-  data: { [string]: number },
-  coloring: string,
+  data: { [key: string]: { [category: string]: number } },
+  coloring: string | string[],
   labelFontSize: number,
   labelColor: string,
   labelRotation: number,
   thickness: number,
   spaceAround: number,
   scrollable: boolean,
-  getValue: (key: string, value: number, index: number) => number,
   onLayout: (e: LayoutEvent) => void,
 };
 
-export default class LineCanvas extends React.PureComponent<Props> {
-  calcLinePoint = (scale: number) => (index: number) => {
-    const { data, thickness, spaceAround, vertical, getValue } = this.props;
-    const [key, value] = Object.entries(data)[index];
-    const currentValue = getValue(key, +value, index);
-    const scaledValue = scale * currentValue;
+type State = {
+  transformedData: { [category: string]: { [key: string]: number } },
+};
+
+export default class LineCanvas extends React.PureComponent<Props, State> {
+  state = {
+    transformedData: {},
+  };
+
+  static getDerivedStateFromProps(props: Props) {
+    const { data } = props;
+    return {
+      transformedData: Object.entries(data).reduce(
+        (byKey, [key, keyData]) =>
+          Object.keys.call(keyData, keyData).reduce(
+            (byCategory, category) => ({
+              ...byCategory,
+              [category]: { ...byCategory[category], [key]: data[key][category] },
+            }),
+            byKey,
+          ),
+        {},
+      ),
+    };
+  }
+
+  calcLinePoint = (category: string, scale: number) => (index: number) => {
+    const { thickness, spaceAround, vertical } = this.props;
+    const { transformedData } = this.state;
+    const value = +Object.values(transformedData[category])[index];
+    const scaledValue = scale * value;
     const step = index * (thickness + spaceAround) + spaceAround;
     return {
-      value: currentValue,
+      value,
       ...(vertical
         ? {
             offset: {
@@ -72,7 +96,6 @@ export default class LineCanvas extends React.PureComponent<Props> {
       chartHeight,
       coloring,
       containerWidth,
-      data,
       thickness,
       labelColor,
       labelFontSize,
@@ -83,6 +106,7 @@ export default class LineCanvas extends React.PureComponent<Props> {
       vertical,
       onLayout,
     } = this.props;
+    const { transformedData } = this.state;
     return (
       <View style={[styles.canvas, styles.container]}>
         <Svg
@@ -95,15 +119,18 @@ export default class LineCanvas extends React.PureComponent<Props> {
           preserveAspectRatio="none"
           onLayout={onLayout}
         >
-          <LineGroup
-            data={data}
-            color={coloring}
-            thickness={thickness}
-            fontColor={labelColor}
-            fontSize={labelFontSize}
-            textRotation={labelRotation}
-            getValue={this.calcLinePoint(scale)}
-          />
+          {Object.keys(transformedData).map((category, index) => (
+            <LineGroup
+              key={category}
+              data={transformedData[category]}
+              color={typeof coloring === 'string' ? coloring : coloring[index % coloring.length]}
+              thickness={thickness}
+              fontColor={labelColor}
+              fontSize={labelFontSize}
+              textRotation={labelRotation}
+              getValue={this.calcLinePoint(category, scale)}
+            />
+          ))}
         </Svg>
       </View>
     );
