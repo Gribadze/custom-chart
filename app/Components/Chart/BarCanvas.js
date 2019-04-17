@@ -1,7 +1,7 @@
 // @flow
 import React from 'react';
 import { View } from 'react-native';
-import { Svg } from 'react-native-svg/index';
+import { Svg } from 'react-native-svg';
 import type { LayoutEvent } from 'react-native/Libraries/Types/CoreEventTypes';
 import styles from './Styles';
 import BarGroup from './BarGroup';
@@ -14,8 +14,8 @@ type Props = {
   positiveHeight: number,
   containerWidth: number,
   chartHeight: number,
-  data: { [string]: number },
-  coloring: string,
+  data: { [key: string]: { [category: string]: number } },
+  coloring: string | string[],
   labelFontSize: number,
   labelColor: string,
   labelRotation: number,
@@ -27,30 +27,30 @@ type Props = {
 };
 
 export default class BarCanvas extends React.PureComponent<Props> {
-  calcBarRect = (scale: number) => (index: number) => {
-    const { data, thickness, spaceAround, vertical, getValue } = this.props;
-    const [key, value] = Object.entries(data)[index];
-    const currentValue = getValue(key, +value, index);
-    const scaledValue = scale * currentValue;
-    const step = index * (thickness + spaceAround) + spaceAround;
+  calcBarRect = (key: string, scale: number) => (index: number) => {
+    const { data, thickness, vertical } = this.props;
+    const keyData = Object.values(data[key]);
+    const value = +keyData[index];
+    const scaledValue = scale * value;
+    const offset = (index * thickness) / keyData.length;
     return {
-      value: currentValue,
+      value,
       ...(vertical
         ? {
             offset: {
               x: 0,
-              y: step,
+              y: offset,
             },
-            height: thickness,
+            height: -thickness / keyData.length,
             width: scaledValue,
           }
         : {
             offset: {
-              x: step,
+              x: offset,
               y: 0,
             },
             height: scaledValue,
-            width: thickness,
+            width: thickness / keyData.length,
           }),
     };
   };
@@ -85,6 +85,8 @@ export default class BarCanvas extends React.PureComponent<Props> {
       scale,
       vertical,
       onLayout,
+      thickness,
+      spaceAround,
     } = this.props;
     return (
       <View style={[styles.canvas, styles.container]}>
@@ -98,14 +100,28 @@ export default class BarCanvas extends React.PureComponent<Props> {
           preserveAspectRatio="none"
           onLayout={onLayout}
         >
-          <BarGroup
-            data={data}
-            color={coloring}
-            getValue={this.calcBarRect(scale)}
-            fontSize={labelFontSize}
-            fontColor={labelColor}
-            textRotation={labelRotation}
-          />
+          {Object.keys(data).map((key, index) => {
+            const step = index * (thickness + spaceAround) + spaceAround;
+            return (
+              <BarGroup
+                key={key}
+                data={data[key]}
+                offset={
+                  vertical
+                    ? { x: 0, y: step }
+                    : {
+                        x: step,
+                        y: 0,
+                      }
+                }
+                color={coloring}
+                getValue={this.calcBarRect(key, scale)}
+                fontSize={labelFontSize}
+                fontColor={labelColor}
+                textRotation={labelRotation}
+              />
+            );
+          })}
         </Svg>
       </View>
     );

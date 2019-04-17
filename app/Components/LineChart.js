@@ -17,7 +17,7 @@ type DefaultProps = {
 };
 
 type Props = DefaultProps & {
-  data: { [string]: number },
+  data: { [key: string]: { [category: string]: number } },
   getValue?: (key: string, value: number, index?: number) => number,
   getLabel?: (key: string, value?: number, index?: number) => string,
   // eslint-disable-next-line react/no-unused-prop-types
