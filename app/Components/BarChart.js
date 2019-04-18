@@ -49,6 +49,7 @@ export default class BarChart extends React.PureComponent<Props> {
   };
 
   render() {
-    return <Chart type={ChartType.BAR} {...this.props} />;
+    const { props } = this;
+    return <Chart type={ChartType.BAR} {...props} />;
   }
 }

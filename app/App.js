@@ -8,9 +8,10 @@
 
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Circle, Line, Svg } from 'react-native-svg';
+import { Line, Svg } from 'react-native-svg';
 import BarChart from './Components/BarChart';
 import LineChart from './Components/LineChart';
+import Pie from './Components/Chart/Pie';
 
 const data = {
   January: { '2018': -20, '2019': -25 },
@@ -40,34 +41,40 @@ export default function App() {
     Bot: 0.22,
   };
   const r = 150;
-  const len = 2 * Math.PI * (r / 2);
   return (
     <View style={styles.container}>
       <BarChart data={data} coloring={['yellow', 'blue']} labelRotation={60} vertical />
       <LineChart data={data} coloring={['green', 'cyan']} />
       <Svg width="100%" height="100%" viewBox="-200 -200 500 500">
-        <Circle
-          r={r / 2}
-          fill="none"
-          stroke="cyan"
-          strokeDasharray={`${len * d.Male} ${len}`}
-          strokeWidth={r}
+        <Pie
+          radius={r}
+          offset={0}
+          part={d.Male}
+          text="Male"
+          textRotation={60}
+          fontColor="black"
+          fontSize={14}
+          color="cyan"
         />
-        <Circle
-          r={r / 2}
-          fill="none"
-          stroke="magenta"
-          strokeDashoffset={`${-len * d.Male}`}
-          strokeDasharray={`${len * d.Female} ${len}`}
-          strokeWidth={r}
+        <Pie
+          radius={r}
+          offset={d.Male}
+          part={d.Female}
+          text="Female"
+          textRotation={60}
+          fontColor="black"
+          fontSize={14}
+          color="magenta"
         />
-        <Circle
-          r={r / 2}
-          fill="none"
-          stroke="gray"
-          strokeDashoffset={`${-len * (d.Male + d.Female)}`}
-          strokeDasharray={`${len * d.Bot} ${len}`}
-          strokeWidth={r}
+        <Pie
+          radius={r}
+          offset={d.Male + d.Female}
+          part={d.Bot}
+          text="Bot"
+          textRotation={60}
+          fontColor="black"
+          fontSize={14}
+          color="silver"
         />
         <Line x1={-200} y1={0} x2={300} y2={0} stroke="silver" />
         <Line x1={0} y1={-200} x2={0} y2={300} stroke="silver" />
