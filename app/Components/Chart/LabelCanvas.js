@@ -46,7 +46,7 @@ export default class LabelCanvas extends React.PureComponent<Props> {
     const { vertical, scrollable } = this.props;
     return vertical
       ? {
-          width: height,
+          width: +height,
           height: scrollable ? width : '100%',
           viewBox: `${y} ${x} ${height} ${width}`,
         }
@@ -68,18 +68,15 @@ export default class LabelCanvas extends React.PureComponent<Props> {
       labelFontSize,
       labelRotation,
     } = this.props;
+    const canvasProps = this.calcCanvasProps(
+      leftOverflow,
+      -(labelHeight / 2 + LABEL_PADDING),
+      containerWidth,
+      labelHeight + LABEL_PADDING * 2,
+    );
     return (
       <View style={styles.canvas}>
-        <Svg
-          {...this.calcCanvasProps(
-            leftOverflow,
-            -(labelHeight / 2 + LABEL_PADDING),
-            containerWidth,
-            labelHeight + LABEL_PADDING * 2,
-          )}
-          x={leftOverflow}
-          preserveAspectRatio="none"
-        >
+        <Svg {...canvasProps} x={leftOverflow} preserveAspectRatio="none">
           <LabelGroup
             data={labels}
             fontColor={labelColor}

@@ -3,6 +3,7 @@ import React from 'react';
 import { View } from 'react-native';
 import { Svg } from 'react-native-svg';
 import type { LayoutEvent } from 'react-native/Libraries/Types/CoreEventTypes';
+import type { DataType } from './Chart.types';
 import styles from './Styles';
 import BarGroup from './BarGroup';
 
@@ -14,7 +15,7 @@ type Props = {
   positiveHeight: number,
   containerWidth: number,
   chartHeight: number,
-  data: { [key: string]: { [category: string]: number } },
+  data: DataType,
   coloring: string | string[],
   labelFontSize: number,
   labelColor: string,
@@ -29,7 +30,11 @@ type Props = {
 export default class BarCanvas extends React.PureComponent<Props> {
   calcBarRect = (key: string, scale: number) => (index: number) => {
     const { data, thickness, vertical } = this.props;
-    const keyData = Object.values(data[key]);
+    const keyDataObj = Object.entries
+      .call(data, data)
+      .filter(([k]) => k === key)
+      .map(([, keyData]) => keyData)[0];
+    const keyData = Object.values.call(keyDataObj, keyDataObj);
     const value = +keyData[index];
     const scaledValue = scale * value;
     const offset = (index * thickness) / keyData.length;
@@ -88,32 +93,22 @@ export default class BarCanvas extends React.PureComponent<Props> {
       thickness,
       spaceAround,
     } = this.props;
+    const canvasProps = this.calcCanvasProps(
+      leftOverflow,
+      vertical ? scale * negativeHeight : -scale * positiveHeight,
+      containerWidth,
+      chartHeight,
+    );
     return (
       <View style={[styles.canvas, styles.container]}>
-        <Svg
-          {...this.calcCanvasProps(
-            leftOverflow,
-            vertical ? scale * negativeHeight : -scale * positiveHeight,
-            containerWidth,
-            chartHeight,
-          )}
-          preserveAspectRatio="none"
-          onLayout={onLayout}
-        >
-          {Object.keys(data).map((key, index) => {
+        <Svg {...canvasProps} preserveAspectRatio="none" onLayout={onLayout}>
+          {Object.keys.call(data, data).map((key, index) => {
             const step = index * (thickness + spaceAround) + spaceAround;
             return (
               <BarGroup
                 key={key}
                 data={data[key]}
-                offset={
-                  vertical
-                    ? { x: 0, y: step }
-                    : {
-                        x: step,
-                        y: 0,
-                      }
-                }
+                offset={vertical ? { x: 0, y: step } : { x: step, y: 0 }}
                 color={coloring}
                 getValue={this.calcBarRect(key, scale)}
                 fontSize={labelFontSize}

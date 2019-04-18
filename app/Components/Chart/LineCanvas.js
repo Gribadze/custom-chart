@@ -5,6 +5,7 @@ import { Svg } from 'react-native-svg/index';
 import type { LayoutEvent } from 'react-native/Libraries/Types/CoreEventTypes';
 import styles from './Styles';
 import LineGroup from './LineGroup';
+import type { DataType } from './Chart.types';
 
 type Props = {
   leftOverflow: number,
@@ -14,7 +15,7 @@ type Props = {
   positiveHeight: number,
   containerWidth: number,
   chartHeight: number,
-  data: { [key: string]: { [category: string]: number } },
+  data: DataType,
   coloring: string | string[],
   labelFontSize: number,
   labelColor: string,
@@ -39,10 +40,10 @@ export default class LineCanvas extends React.PureComponent<Props, State> {
     return {
       transformedData: Object.entries(data).reduce(
         (byKey, [key, keyData]) =>
-          Object.keys.call(keyData, keyData).reduce(
-            (byCategory, category) => ({
+          Object.entries.call(keyData, keyData).reduce(
+            (byCategory, [category, value]) => ({
               ...byCategory,
-              [category]: { ...byCategory[category], [key]: data[key][category] },
+              [category]: { ...byCategory[category], [key]: value },
             }),
             byKey,
           ),
@@ -107,18 +108,15 @@ export default class LineCanvas extends React.PureComponent<Props, State> {
       onLayout,
     } = this.props;
     const { transformedData } = this.state;
+    const canvasProps = this.calcCanvasProps(
+      leftOverflow,
+      vertical ? scale * negativeHeight : -scale * positiveHeight,
+      containerWidth,
+      chartHeight,
+    );
     return (
       <View style={[styles.canvas, styles.container]}>
-        <Svg
-          {...this.calcCanvasProps(
-            leftOverflow,
-            vertical ? scale * negativeHeight : -scale * positiveHeight,
-            containerWidth,
-            chartHeight,
-          )}
-          preserveAspectRatio="none"
-          onLayout={onLayout}
-        >
+        <Svg {...canvasProps} preserveAspectRatio="none" onLayout={onLayout}>
           {Object.keys(transformedData).map((category, index) => (
             <LineGroup
               key={category}

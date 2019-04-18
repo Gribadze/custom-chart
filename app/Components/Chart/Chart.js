@@ -2,6 +2,7 @@
 import React from 'react';
 import { ScrollView, View } from 'react-native';
 import type { LayoutEvent } from 'react-native/Libraries/Types/CoreEventTypes';
+import type { DataType } from './Chart.types';
 import styles from './Styles';
 import BarCanvas from './BarCanvas';
 import LabelCanvas from './LabelCanvas';
@@ -27,7 +28,7 @@ type DefaultProps = {
 
 type Props = DefaultProps & {
   type: string,
-  data: { [key: string]: { [category: string]: number } },
+  data: DataType,
   // eslint-disable-next-line react/no-unused-prop-types
   maxValue?: number,
   // eslint-disable-next-line react/no-unused-prop-types
@@ -74,11 +75,11 @@ export default class Chart extends React.Component<Props, State> {
   };
 
   static getDerivedStateFromProps(props: Props) {
-    const positiveHeight = Object.values(props.data).reduce((acc, category) => {
-      return Math.max(acc, ...Object.values(category).map(value => +value));
+    const positiveHeight = Object.values.call(props.data, props.data).reduce((acc, category) => {
+      return Math.max(acc, ...Object.values.call(category, category).map(value => +value));
     }, props.maxValue || 0);
-    const negativeHeight = Object.values(props.data).reduce((acc, category) => {
-      return Math.min(acc, ...Object.values(category).map(value => +value));
+    const negativeHeight = Object.values.call(props.data, props.data).reduce((acc, category) => {
+      return Math.min(acc, ...Object.values.call(category, category).map(value => +value));
     }, props.minValue || 0);
     return {
       positiveHeight,
@@ -106,7 +107,7 @@ export default class Chart extends React.Component<Props, State> {
       rightOverflow: Math.max(
         state.leftOverflow +
           (vertical ? y + height : width + x) -
-          (Object.keys(props.data).length * (props.thickness + props.spaceAround) +
+          (Object.keys.call(props.data, props.data).length * (props.thickness + props.spaceAround) +
             props.spaceAround),
         state.rightOverflow,
       ),
@@ -114,7 +115,8 @@ export default class Chart extends React.Component<Props, State> {
   };
 
   render() {
-    const { type, data, thickness, spaceAround, vertical, showLabel, scrollable } = this.props;
+    const { props } = this;
+    const { type, data, thickness, spaceAround, vertical, showLabel, scrollable } = props;
     const {
       positiveHeight,
       negativeHeight,
@@ -124,7 +126,8 @@ export default class Chart extends React.Component<Props, State> {
       scale,
     } = this.state;
     const chartHeight = scale * (positiveHeight - negativeHeight);
-    const chartWidth = Object.keys(data).length * (thickness + spaceAround) + spaceAround;
+    const chartWidth =
+      Object.keys.call(data, data).length * (thickness + spaceAround) + spaceAround;
     const containerWidth = Math.abs(leftOverflow) + chartWidth + rightOverflow;
     const Canvas = ChartCanvas[type];
     return (
@@ -144,7 +147,7 @@ export default class Chart extends React.Component<Props, State> {
           ]}
         >
           <Canvas
-            {...this.props}
+            {...props}
             leftOverflow={leftOverflow}
             scale={scale}
             negativeHeight={negativeHeight}
@@ -155,8 +158,8 @@ export default class Chart extends React.Component<Props, State> {
           />
           {showLabel ? (
             <LabelCanvas
-              {...this.props}
-              labels={Object.keys(data)}
+              {...props}
+              labels={Object.keys.call(data, data)}
               leftOverflow={leftOverflow}
               scale={scale}
               negativeHeight={negativeHeight}

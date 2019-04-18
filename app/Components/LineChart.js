@@ -1,10 +1,9 @@
 // @flow
 import React from 'react';
 import Chart, { ChartType } from './Chart/Chart';
+import type { DataType } from './Chart/Chart.types';
 
 type DefaultProps = {
-  getValue: (key: string, value: number, index?: number) => number,
-  getLabel: (key: string, value?: number, index?: number) => string,
   thickness: number,
   spaceAround: number,
   scrollable: boolean,
@@ -17,9 +16,7 @@ type DefaultProps = {
 };
 
 type Props = DefaultProps & {
-  data: { [key: string]: { [category: string]: number } },
-  getValue?: (key: string, value: number, index?: number) => number,
-  getLabel?: (key: string, value?: number, index?: number) => string,
+  data: DataType,
   // eslint-disable-next-line react/no-unused-prop-types
   maxValue?: number,
   // eslint-disable-next-line react/no-unused-prop-types
@@ -38,8 +35,6 @@ type Props = DefaultProps & {
 
 export default class LineChart extends React.PureComponent<Props> {
   static defaultProps: DefaultProps = {
-    getValue: (key: string, value: mixed) => +value,
-    getLabel: (key: string) => key,
     thickness: 2,
     spaceAround: 40,
     scrollable: true,
@@ -55,6 +50,7 @@ export default class LineChart extends React.PureComponent<Props> {
   };
 
   render() {
-    return <Chart type={ChartType.LINE} {...this.props} />;
+    const { props } = this;
+    return <Chart type={ChartType.LINE} {...props} />;
   }
 }

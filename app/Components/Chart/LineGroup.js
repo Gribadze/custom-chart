@@ -2,13 +2,14 @@
 import React from 'react';
 import { Polyline } from 'react-native-svg/index';
 import Label from './Label';
+import type { CategoryType } from './Chart.types';
 
 type DefaultProps = {
   textRotation: number,
 };
 
 type Props = DefaultProps & {
-  data: { [string]: number },
+  data: CategoryType,
   thickness: number,
   color: string,
   fontColor: string,
@@ -27,7 +28,8 @@ export default class LineGroup extends React.PureComponent<Props> {
     return (
       <>
         <Polyline
-          points={Object.keys(data)
+          points={Object.keys
+            .call(data, data)
             .map((key, index) => {
               const {
                 offset: { x, y },
@@ -39,7 +41,7 @@ export default class LineGroup extends React.PureComponent<Props> {
           stroke={color}
           strokeWidth={thickness}
         />
-        {Object.keys(data).map((key, index) => {
+        {Object.keys.call(data, data).map((key, index) => {
           const { value, offset } = getValue(index);
           return (
             <Label

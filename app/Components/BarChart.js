@@ -1,6 +1,7 @@
 // @flow
 import React from 'react';
 import Chart, { ChartType } from './Chart/Chart';
+import type { DataType } from './Chart/Chart.types';
 
 type DefaultProps = {
   thickness: number,
@@ -15,7 +16,7 @@ type DefaultProps = {
 };
 
 type Props = DefaultProps & {
-  data: { [key: string]: { [category: string]: number } },
+  data: DataType,
   // eslint-disable-next-line react/no-unused-prop-types
   maxValue?: number,
   // eslint-disable-next-line react/no-unused-prop-types
