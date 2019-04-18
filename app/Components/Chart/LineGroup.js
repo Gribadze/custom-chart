@@ -1,5 +1,7 @@
 // @flow
 import React from 'react';
+import keys from 'lodash/keys';
+import map from 'lodash/map';
 import { Polyline } from 'react-native-svg/index';
 import Label from './Label';
 import type { CategoryType } from './Chart.types';
@@ -28,20 +30,17 @@ export default class LineGroup extends React.PureComponent<Props> {
     return (
       <>
         <Polyline
-          points={Object.keys
-            .call(data, data)
-            .map((key, index) => {
-              const {
-                offset: { x, y },
-              } = getValue(index);
-              return `${x},${y}`;
-            })
-            .join(' ')}
+          points={map(keys(data), (key, index) => {
+            const {
+              offset: { x, y },
+            } = getValue(index);
+            return `${x},${y}`;
+          }).join(' ')}
           fill="none"
           stroke={color}
           strokeWidth={thickness}
         />
-        {Object.keys.call(data, data).map((key, index) => {
+        {map(keys(data), (key, index) => {
           const { value, offset } = getValue(index);
           return (
             <Label

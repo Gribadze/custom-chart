@@ -1,5 +1,6 @@
 // @flow
 import React from 'react';
+import map from 'lodash/map';
 import type { LayoutEvent } from 'react-native/Libraries/Types/CoreEventTypes';
 import { G } from 'react-native-svg/index';
 import Label from './Label';
@@ -18,7 +19,7 @@ class LabelGroup extends React.PureComponent<Props> {
     const { data, fontColor, fontSize, textRotation, getOffset, onLayout } = this.props;
     return (
       <G onLayout={onLayout}>
-        {data.map((text, index) => (
+        {map(data, (text, index) => (
           <Label
             key={text}
             color={fontColor}

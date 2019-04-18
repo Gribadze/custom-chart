@@ -2,6 +2,10 @@
 import React from 'react';
 import { View } from 'react-native';
 import { Svg } from 'react-native-svg';
+import get from 'lodash/get';
+import entries from 'lodash/entries';
+import map from 'lodash/map';
+import values from 'lodash/values';
 import type { LayoutEvent } from 'react-native/Libraries/Types/CoreEventTypes';
 import type { DataType } from './Chart.types';
 import styles from './Styles';
@@ -30,11 +34,7 @@ type Props = {
 export default class BarCanvas extends React.PureComponent<Props> {
   calcBarRect = (key: string, scale: number) => (index: number) => {
     const { data, thickness, vertical } = this.props;
-    const keyDataObj = Object.entries
-      .call(data, data)
-      .filter(([k]) => k === key)
-      .map(([, keyData]) => keyData)[0];
-    const keyData = Object.values.call(keyDataObj, keyDataObj);
+    const keyData = values(get(data, key));
     const value = +keyData[index];
     const scaledValue = scale * value;
     const offset = (index * thickness) / keyData.length;
@@ -102,12 +102,12 @@ export default class BarCanvas extends React.PureComponent<Props> {
     return (
       <View style={[styles.canvas, styles.container]}>
         <Svg {...canvasProps} preserveAspectRatio="none" onLayout={onLayout}>
-          {Object.keys.call(data, data).map((key, index) => {
+          {map(entries(data), ([key, keyData], index) => {
             const step = index * (thickness + spaceAround) + spaceAround;
             return (
               <BarGroup
                 key={key}
-                data={data[key]}
+                data={keyData}
                 offset={vertical ? { x: 0, y: step } : { x: step, y: 0 }}
                 color={coloring}
                 getValue={this.calcBarRect(key, scale)}

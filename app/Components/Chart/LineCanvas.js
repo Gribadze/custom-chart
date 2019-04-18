@@ -2,6 +2,12 @@
 import React from 'react';
 import { View } from 'react-native';
 import { Svg } from 'react-native-svg/index';
+import entries from 'lodash/entries';
+import reduce from 'lodash/reduce';
+import get from 'lodash/get';
+import values from 'lodash/values';
+import keys from 'lodash/keys';
+import map from 'lodash/map';
 import type { LayoutEvent } from 'react-native/Libraries/Types/CoreEventTypes';
 import styles from './Styles';
 import LineGroup from './LineGroup';
@@ -27,7 +33,7 @@ type Props = {
 };
 
 type State = {
-  transformedData: { [category: string]: { [key: string]: number } },
+  transformedData: DataType,
 };
 
 export default class LineCanvas extends React.PureComponent<Props, State> {
@@ -38,9 +44,11 @@ export default class LineCanvas extends React.PureComponent<Props, State> {
   static getDerivedStateFromProps(props: Props) {
     const { data } = props;
     return {
-      transformedData: Object.entries(data).reduce(
+      transformedData: reduce(
+        entries(data),
         (byKey, [key, keyData]) =>
-          Object.entries.call(keyData, keyData).reduce(
+          reduce(
+            entries(keyData),
             (byCategory, [category, value]) => ({
               ...byCategory,
               [category]: { ...byCategory[category], [key]: value },
@@ -55,7 +63,7 @@ export default class LineCanvas extends React.PureComponent<Props, State> {
   calcLinePoint = (category: string, scale: number) => (index: number) => {
     const { thickness, spaceAround, vertical } = this.props;
     const { transformedData } = this.state;
-    const value = +Object.values(transformedData[category])[index];
+    const value = get(values(get(transformedData, category)), index);
     const scaledValue = scale * value;
     const step = index * (thickness + spaceAround) + spaceAround;
     return {
@@ -117,10 +125,10 @@ export default class LineCanvas extends React.PureComponent<Props, State> {
     return (
       <View style={[styles.canvas, styles.container]}>
         <Svg {...canvasProps} preserveAspectRatio="none" onLayout={onLayout}>
-          {Object.keys(transformedData).map((category, index) => (
+          {map(keys(transformedData), (category, index) => (
             <LineGroup
               key={category}
-              data={transformedData[category]}
+              data={get(transformedData, category)}
               color={typeof coloring === 'string' ? coloring : coloring[index % coloring.length]}
               thickness={thickness}
               fontColor={labelColor}

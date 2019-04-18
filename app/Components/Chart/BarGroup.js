@@ -1,5 +1,7 @@
 // @flow
 import React from 'react';
+import keys from 'lodash/keys';
+import map from 'lodash/map';
 import Bar from './Bar';
 import type { CategoryType } from './Chart.types';
 
@@ -28,7 +30,7 @@ export default class BarGroup extends React.PureComponent<Props> {
     const { data, color, getValue, fontSize, fontColor, textRotation, offset } = this.props;
     return (
       <>
-        {Object.keys.call(data, data).map((key, index) => {
+        {map(keys(data), (key, index) => {
           const { height, width, value, offset: barOffset } = getValue(index);
           return (
             <Bar
