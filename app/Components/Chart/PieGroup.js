@@ -12,14 +12,14 @@ type Props = {
   size: number,
   data: CategoryType,
   coloring: string[],
-  labelRotation: number,
-  labelColor: string,
-  labelFontSize: number,
+  textRotation: number,
+  fontColor: string,
+  fontSize: number,
 };
 
 export default class PieGroup extends React.PureComponent<Props> {
   render() {
-    const { data, size, coloring, labelRotation, labelFontSize, labelColor } = this.props;
+    const { data, size, coloring, textRotation, fontSize, fontColor } = this.props;
     const fullGroupSum = sum(map(data));
     return (
       <>
@@ -30,9 +30,9 @@ export default class PieGroup extends React.PureComponent<Props> {
             offset={sum(slice(map(data, value => value / fullGroupSum), 0, index))}
             part={get(data, key) / fullGroupSum}
             text={`${key} (${data[key]})`}
-            textRotation={labelRotation}
-            fontColor={labelColor}
-            fontSize={labelFontSize}
+            textRotation={textRotation}
+            fontColor={fontColor}
+            fontSize={fontSize}
             color={coloring[index % coloring.length]}
           />
         ))}

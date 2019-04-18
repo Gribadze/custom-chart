@@ -12,6 +12,7 @@ import styles from './Styles';
 import BarCanvas from './BarCanvas';
 import LabelCanvas from './LabelCanvas';
 import LineCanvas from './LineCanvas';
+import PieCanvas from './PieCanvas';
 
 export const ChartType = {
   BAR: 'bar',
@@ -22,6 +23,7 @@ export const ChartType = {
 const ChartCanvas = {
   [ChartType.BAR]: BarCanvas,
   [ChartType.LINE]: LineCanvas,
+  [ChartType.PIE]: PieCanvas,
 };
 
 type DefaultProps = {
@@ -29,6 +31,8 @@ type DefaultProps = {
   vertical: boolean,
   showLabel: boolean,
   labelFontSize: number,
+  thickness: number,
+  spaceAround: number,
 };
 
 type Props = DefaultProps & {
@@ -38,8 +42,8 @@ type Props = DefaultProps & {
   maxValue?: number,
   // eslint-disable-next-line react/no-unused-prop-types
   minValue?: number,
-  thickness: number,
-  spaceAround: number,
+  thickness?: number,
+  spaceAround?: number,
   scrollable?: boolean,
   coloring: string | string[],
   vertical?: boolean,
@@ -63,6 +67,8 @@ export default class Chart extends React.Component<Props, State> {
   static defaultProps: DefaultProps = {
     scrollable: true,
     vertical: false,
+    thickness: 0,
+    spaceAround: 0,
     // clickable: false,
     showLabel: true,
     labelFontSize: 14,

@@ -9,7 +9,7 @@ export default StyleSheet.create({
     flexGrow: 1,
   },
   canvas: {
-    justifyContent: 'flex-end',
+    // justifyContent: 'flex-end',
     alignItems: 'center',
   },
 });

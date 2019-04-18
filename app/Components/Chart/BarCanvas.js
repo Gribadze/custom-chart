@@ -27,7 +27,6 @@ type Props = {
   thickness: number,
   spaceAround: number,
   scrollable: boolean,
-  getValue: (key: string, value: number, index: number) => number,
   onLayout: (e: LayoutEvent) => void,
 };
 
