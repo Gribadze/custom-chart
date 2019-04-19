@@ -8,11 +8,9 @@
 
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Line, Svg } from 'react-native-svg';
 import BarChart from './Components/BarChart';
 import LineChart from './Components/LineChart';
-import PieGroup from './Components/Chart/PieGroup';
-import PieCanvas from './Components/Chart/PieCanvas';
+import PieChart from './Components/PieChart';
 
 const data = {
   January: { '2018': -20, '2019': -25 },
@@ -36,40 +34,28 @@ const styles = StyleSheet.create({
 });
 
 export default function App() {
-  const d = [
-    {
+  const d = {
+    Statistics: {
       Male: 450,
       Female: 700,
       Bot: 340,
     },
-  ];
+  };
   return (
     <View style={styles.container}>
-      <BarChart data={data} coloring={['yellow', 'blue']} labelRotation={60} vertical />
-      <LineChart data={data} coloring={['green', 'cyan']} />
-      <PieCanvas
-        leftOverflow={0}
-        containerWidth={300}
-        chartHeight={300}
-        data={d}
-        coloring={['cyan', 'magenta', 'silver']}
-        labelFontSize={14}
-        labelColor="black"
+      <BarChart
+        data={data}
+        coloring={['#a1aecc', '#acc499']}
         labelRotation={60}
-        onLayout={e => console.log(e.nativeEvent)}
+        scrollable={false}
       />
-      <Svg width="100%" height="100%" viewBox="-200 -200 500 500">
-        <PieGroup
-          size={300}
-          data={d}
-          coloring={['cyan', 'magenta', 'silver']}
-          textRotation={60}
-          fontColor="black"
-          fontSize={14}
-        />
-        <Line x1={-200} y1={0} x2={300} y2={0} stroke="silver" />
-        <Line x1={0} y1={-200} x2={0} y2={300} stroke="silver" />
-      </Svg>
+      <LineChart
+        data={data}
+        coloring={['#a1aecc', '#acc499']}
+        labelRotation={60}
+        scrollable={false}
+      />
+      <PieChart data={d} coloring={['#a1aecc', '#acc499', '#f60']} labelRotation={60} />
     </View>
   );
 }

@@ -12,8 +12,9 @@ import PieGroup from './PieGroup';
 
 type Props = {
   leftOverflow: number,
-  containerWidth: number,
-  chartHeight: number,
+  rightOverflow: number,
+  canvasHeight: number,
+  canvasWidth: number,
   data: DataType,
   coloring: string[],
   labelFontSize: number,
@@ -22,18 +23,18 @@ type Props = {
   onLayout: (e: LayoutEvent) => void,
 };
 
-export default class PieCanvas extends React.PureComponent<Props> {
+export default class PieCanvas extends React.Component<Props> {
   calcCanvasProps = (x: number, y: number, width: number, height: number) => ({
     width: '100%',
     height: '100%',
-    viewBox: `${x} ${y} ${width * 2} ${height}`,
+    viewBox: width && height ? `${x} ${y} ${width} ${height}` : null,
   });
 
   render() {
     const {
-      chartHeight,
+      canvasHeight,
+      canvasWidth,
       coloring,
-      containerWidth,
       data,
       labelColor,
       labelFontSize,
@@ -41,10 +42,10 @@ export default class PieCanvas extends React.PureComponent<Props> {
       onLayout,
     } = this.props;
     const canvasProps = this.calcCanvasProps(
-      -containerWidth / 2,
-      -chartHeight / 2,
-      containerWidth,
-      chartHeight,
+      -canvasWidth / 2,
+      -canvasHeight / 2,
+      canvasWidth,
+      canvasHeight,
     );
     return (
       <View style={[styles.canvas, styles.container]}>
@@ -52,7 +53,7 @@ export default class PieCanvas extends React.PureComponent<Props> {
           {map(entries(data), ([key, keyData]) => (
             <PieGroup
               key={key}
-              size={min([containerWidth, chartHeight])}
+              size={min([canvasWidth, canvasHeight]) || 1}
               data={keyData}
               coloring={coloring}
               fontSize={labelFontSize}

@@ -6,19 +6,26 @@ import get from 'lodash/get';
 import entries from 'lodash/entries';
 import map from 'lodash/map';
 import values from 'lodash/values';
+import reduce from 'lodash/reduce';
+import max from 'lodash/max';
+import min from 'lodash/min';
+import keys from 'lodash/keys';
 import type { LayoutEvent } from 'react-native/Libraries/Types/CoreEventTypes';
 import type { DataType } from './Chart.types';
 import styles from './Styles';
 import BarGroup from './BarGroup';
 
-type Props = {
+type DefaultProps = {
+  minValue: null,
+  maxValue: null,
+};
+
+type Props = DefaultProps & {
+  canvasHeight: number | null,
+  canvasWidth: number | null,
   leftOverflow: number,
+  rightOverflow: number,
   vertical: boolean,
-  scale: number,
-  negativeHeight: number,
-  positiveHeight: number,
-  containerWidth: number,
-  chartHeight: number,
   data: DataType,
   coloring: string | string[],
   labelFontSize: number,
@@ -27,10 +34,57 @@ type Props = {
   thickness: number,
   spaceAround: number,
   scrollable: boolean,
-  onLayout: (e: LayoutEvent) => void,
+  minValue?: number,
+  maxValue?: number,
 };
 
-export default class BarCanvas extends React.PureComponent<Props> {
+type State = {
+  positiveHeight: number,
+  negativeHeight: number,
+  scale: number,
+};
+
+export default class BarCanvas extends React.PureComponent<Props, State> {
+  static defaultProps = {
+    minValue: null,
+    maxValue: null,
+  };
+
+  state = {
+    positiveHeight: 0,
+    negativeHeight: 0,
+    scale: 1,
+  };
+
+  static getDerivedStateFromProps(props: Props) {
+    const { data, minValue, maxValue } = props;
+    const positiveHeight = reduce(
+      values(data),
+      (acc, category) => max([acc, ...values(category)]),
+      maxValue || 0,
+    );
+    const negativeHeight = reduce(
+      values(data),
+      (acc, category) => min([acc, ...values(category)]),
+      minValue || 0,
+    );
+    return {
+      positiveHeight,
+      negativeHeight,
+    };
+  }
+
+  handleCanvasLayout = (e: LayoutEvent) => {
+    const {
+      nativeEvent: {
+        layout: { height, width },
+      },
+    } = e;
+    const { vertical } = this.props;
+    const { positiveHeight, negativeHeight } = this.state;
+    this.setState({ scale: (vertical ? width : height) / (positiveHeight - negativeHeight) });
+  };
+
   calcBarRect = (key: string, scale: number) => (index: number) => {
     const { data, thickness, vertical } = this.props;
     const keyData = values(get(data, key));
@@ -77,30 +131,32 @@ export default class BarCanvas extends React.PureComponent<Props> {
   render() {
     const {
       leftOverflow,
-      chartHeight,
+      rightOverflow,
       coloring,
-      containerWidth,
       data,
       labelColor,
       labelFontSize,
       labelRotation,
-      negativeHeight,
-      positiveHeight,
-      scale,
       vertical,
-      onLayout,
       thickness,
       spaceAround,
     } = this.props;
+    const { positiveHeight, negativeHeight, scale } = this.state;
+    const chartHeight = scale * (positiveHeight - negativeHeight);
+    const chartWidth =
+      Math.abs(leftOverflow) +
+      keys(data).length * (thickness + spaceAround) +
+      spaceAround +
+      rightOverflow;
     const canvasProps = this.calcCanvasProps(
       leftOverflow,
       vertical ? scale * negativeHeight : -scale * positiveHeight,
-      containerWidth,
+      chartWidth,
       chartHeight,
     );
     return (
       <View style={[styles.canvas, styles.container]}>
-        <Svg {...canvasProps} preserveAspectRatio="none" onLayout={onLayout}>
+        <Svg {...canvasProps} preserveAspectRatio="none" onLayout={this.handleCanvasLayout}>
           {map(entries(data), ([key, keyData], index) => {
             const step = index * (thickness + spaceAround) + spaceAround;
             return (

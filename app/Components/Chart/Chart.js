@@ -1,9 +1,7 @@
 // @flow
 import React from 'react';
 import { ScrollView, View } from 'react-native';
-import values from 'lodash/values';
 import keys from 'lodash/keys';
-import reduce from 'lodash/reduce';
 import max from 'lodash/max';
 import min from 'lodash/min';
 import type { LayoutEvent } from 'react-native/Libraries/Types/CoreEventTypes';
@@ -38,10 +36,8 @@ type DefaultProps = {
 type Props = DefaultProps & {
   type: string,
   data: DataType,
-  // eslint-disable-next-line react/no-unused-prop-types
-  maxValue?: number,
-  // eslint-disable-next-line react/no-unused-prop-types
-  minValue?: number,
+  maxValue: number | null,
+  minValue: number | null,
   thickness?: number,
   spaceAround?: number,
   scrollable?: boolean,
@@ -55,12 +51,11 @@ type Props = DefaultProps & {
 };
 
 type State = {
-  positiveHeight: number,
-  negativeHeight: number,
   labelHeight: number,
-  scale: number,
   leftOverflow: number,
   rightOverflow: number,
+  canvasWidth: number | null,
+  canvasHeight: number | null,
 };
 
 export default class Chart extends React.Component<Props, State> {
@@ -72,44 +67,24 @@ export default class Chart extends React.Component<Props, State> {
     // clickable: false,
     showLabel: true,
     labelFontSize: 14,
-    maxValue: null,
-    minValue: null,
   };
 
   state = {
-    positiveHeight: 0,
-    negativeHeight: 0,
-    scale: 1,
     labelHeight: 0,
     leftOverflow: 0,
     rightOverflow: 0,
+    canvasWidth: null,
+    canvasHeight: null,
   };
-
-  static getDerivedStateFromProps(props: Props) {
-    const { data, minValue, maxValue } = props;
-    const positiveHeight = reduce(
-      values(data),
-      (acc, category) => max([acc, ...values(category)]),
-      maxValue || 0,
-    );
-    const negativeHeight = reduce(
-      values(data),
-      (acc, category) => min([acc, ...values(category)]),
-      minValue || 0,
-    );
-    return {
-      positiveHeight,
-      negativeHeight,
-    };
-  }
 
   handleCanvasLayout = ({ nativeEvent }: LayoutEvent) => {
     const {
       layout: { height, width },
     } = nativeEvent;
-    const { vertical } = this.props;
-    const { positiveHeight, negativeHeight } = this.state;
-    this.setState({ scale: (vertical ? width : height) / (positiveHeight - negativeHeight) });
+    this.setState({
+      canvasWidth: width,
+      canvasHeight: height,
+    });
   };
 
   handleLabelLayout = ({ nativeEvent }: LayoutEvent) => {
@@ -131,18 +106,8 @@ export default class Chart extends React.Component<Props, State> {
 
   render() {
     const { props } = this;
-    const { type, data, thickness, spaceAround, vertical, showLabel, scrollable } = props;
-    const {
-      positiveHeight,
-      negativeHeight,
-      labelHeight,
-      leftOverflow,
-      rightOverflow,
-      scale,
-    } = this.state;
-    const chartHeight = scale * (positiveHeight - negativeHeight);
-    const chartWidth = keys(data).length * (thickness + spaceAround) + spaceAround;
-    const containerWidth = Math.abs(leftOverflow) + chartWidth + rightOverflow;
+    const { type, data, vertical, showLabel, scrollable } = props;
+    const { labelHeight, leftOverflow, rightOverflow, canvasWidth, canvasHeight } = this.state;
     const Canvas = ChartCanvas[type];
     return (
       <ScrollView
@@ -163,11 +128,9 @@ export default class Chart extends React.Component<Props, State> {
           <Canvas
             {...props}
             leftOverflow={leftOverflow}
-            scale={scale}
-            negativeHeight={negativeHeight}
-            positiveHeight={positiveHeight}
-            containerWidth={containerWidth}
-            chartHeight={chartHeight}
+            rightOverflow={rightOverflow}
+            canvasWidth={canvasWidth}
+            canvasHeight={canvasHeight}
             onLayout={this.handleCanvasLayout}
           />
           {showLabel ? (
@@ -175,11 +138,7 @@ export default class Chart extends React.Component<Props, State> {
               {...props}
               labels={keys(data)}
               leftOverflow={leftOverflow}
-              scale={scale}
-              negativeHeight={negativeHeight}
-              positiveHeight={positiveHeight}
-              containerWidth={containerWidth}
-              chartHeight={chartHeight}
+              rightOverflow={rightOverflow}
               labelHeight={labelHeight}
               onLayout={this.handleLabelLayout}
             />

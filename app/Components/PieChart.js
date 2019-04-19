@@ -8,6 +8,8 @@ type DefaultProps = {
   showLabel: boolean,
   labelRotation: number,
   labelFontSize: number,
+  minValue: null,
+  maxValue: null,
 };
 
 type Props = DefaultProps & {
@@ -18,15 +20,19 @@ type Props = DefaultProps & {
   showLabel?: boolean,
   labelRotation?: number,
   labelFontSize?: number,
+  minValue?: null,
+  maxValue?: null,
 };
 
-export default class BarChart extends React.PureComponent<Props> {
+export default class PieChart extends React.PureComponent<Props> {
   static defaultProps: DefaultProps = {
     labelColor: '#000000',
     // clickable: false,
-    showLabel: true,
+    showLabel: false,
     labelRotation: 90,
     labelFontSize: 14,
+    minValue: null,
+    maxValue: null,
   };
 
   render() {

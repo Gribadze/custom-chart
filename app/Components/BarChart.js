@@ -13,14 +13,14 @@ type DefaultProps = {
   showLabel: boolean,
   labelRotation: number,
   labelFontSize: number,
+  maxValue: null,
+  minValue: null,
 };
 
 type Props = DefaultProps & {
   data: DataType,
-  // eslint-disable-next-line react/no-unused-prop-types
-  maxValue?: number,
-  // eslint-disable-next-line react/no-unused-prop-types
-  minValue?: number,
+  maxValue?: number | null,
+  minValue?: number | null,
   thickness?: number,
   spaceAround?: number,
   scrollable?: boolean,

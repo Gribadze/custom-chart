@@ -10,12 +10,8 @@ const LABEL_PADDING = 10;
 
 type Props = {
   leftOverflow: number,
+  rightOverflow: number,
   vertical: boolean,
-  scale: number,
-  negativeHeight: number,
-  positiveHeight: number,
-  containerWidth: number,
-  chartHeight: number,
   labels: string[],
   labelHeight: number,
   labelFontSize: number,
@@ -60,23 +56,30 @@ export default class LabelCanvas extends React.PureComponent<Props> {
   render() {
     const {
       leftOverflow,
+      rightOverflow,
+      thickness,
+      spaceAround,
       onLayout,
       labelHeight,
-      containerWidth,
       labels,
       labelColor,
       labelFontSize,
       labelRotation,
     } = this.props;
+    const labelsWidth =
+      Math.abs(leftOverflow) +
+      labels.length * (thickness + spaceAround) +
+      spaceAround +
+      rightOverflow;
     const canvasProps = this.calcCanvasProps(
       leftOverflow,
       -(labelHeight / 2 + LABEL_PADDING),
-      containerWidth,
+      labelsWidth,
       labelHeight + LABEL_PADDING * 2,
     );
     return (
       <View style={styles.canvas}>
-        <Svg {...canvasProps} x={leftOverflow} preserveAspectRatio="none">
+        <Svg {...canvasProps} preserveAspectRatio="none">
           <LabelGroup
             data={labels}
             fontColor={labelColor}
